@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { UiStateService } from './core/services/state/ui-state.service';
 
 @Component({
   selector: 'vc-root',
@@ -6,5 +7,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'vc';
+  constructor(readonly uiSs: UiStateService) {
+    console.log(uiSs);
+  }
 }

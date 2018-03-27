@@ -1,0 +1,30 @@
+.google-button {
+  background: #fff;
+}
+
+.facebook-button {
+  border: none;
+
+  color: #FFF;
+  background: #3b5998;
+}
+
+.continue-button {
+  width: 360px;
+  padding: 12px;
+
+  cursor: pointer;
+
+  img {
+    width: 32px;
+    height: 32px;
+  }
+
+  span {
+    font-weight: 600;
+  }
+}
+
+.mat-subheading-1 {
+  max-width: 360px;
+}
