@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
 
-import { NgModule } from '@angular/core';
+import { ModuleWithProviders, NgModule } from '@angular/core';
 import { MatDialogModule } from '@angular/material';
 
 import { NgxsModule } from '@ngxs/store';

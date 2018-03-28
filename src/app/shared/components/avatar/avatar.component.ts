@@ -1,6 +1,5 @@
-import { Component, HostListener } from '@angular/core';
-import { ToggleLogin } from '../../actions/ui.action';
-import { Store } from '@ngxs/store';
+import { Component, Input } from '@angular/core';
+import { IUser } from '../../interface/user.interface';
 
 @Component({
   selector: 'vc-avatar',
@@ -8,10 +7,5 @@ import { Store } from '@ngxs/store';
   styleUrls: ['./avatar.component.scss']
 })
 export class AvatarComponent {
-  constructor(readonly store: Store) {}
-
-  @HostListener('click')
-  onClick(): void {
-    this.store.dispatch(new ToggleLogin());
-  }
+  @Input() user: IUser | null = null;
 }

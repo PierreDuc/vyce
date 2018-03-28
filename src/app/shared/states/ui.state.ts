@@ -1,4 +1,4 @@
-import { Action, State } from '@ngxs/store';
+import { Action, State, StateContext } from '@ngxs/store';
 
 import { HideLogin, ShowLogin, ToggleLogin } from '../actions/ui.action';
 
@@ -14,23 +14,23 @@ export interface UiStateModel {
     showLogin: false
   }
 })
-export class UiState {
+export class UiState<T extends StateContext<UiStateModel>> {
   @Action(ShowLogin)
-  showLogin({ patchState }): void {
+  showLogin({ patchState }: T): void {
     patchState({
       showLogin: true
     });
   }
 
   @Action(HideLogin)
-  hideLogin({ patchState }): void {
+  hideLogin({ patchState }: T): void {
     patchState({
       showLogin: false
     });
   }
 
   @Action(ToggleLogin)
-  toggleLogin({ patchState, getState }): void {
+  toggleLogin({ patchState, getState }: T): void {
     patchState({
       showLogin: !getState().showLogin
     });

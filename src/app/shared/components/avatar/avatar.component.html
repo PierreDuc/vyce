@@ -1,5 +1,6 @@
 <div fxLayout="column" fxLayoutAlign="center">
   <button mat-icon-button>
-    <mat-icon color="primary">account_circle</mat-icon>
+    <mat-icon *ngIf="!user?.photoURL" color="primary">account_circle</mat-icon>
+    <span *ngIf="user?.photoURL" class="avatar-image vc-background-cover" [style.background-image]="'url(' + user?.photoURL?.toString() + ')' | safeStyle"></span>
   </button>
 </div>

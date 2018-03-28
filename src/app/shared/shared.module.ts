@@ -10,22 +10,8 @@ import { LoginDialogComponent } from './components/dialog/login-dialog/login-dia
 
 @NgModule({
   imports: [CommonModule, FlexLayoutModule, MatIconModule, MatButtonModule],
-  declarations: [
-    SafeStylePipe,
-
-    AvatarComponent,
-    LogoComponent,
-    LoginDialogComponent
-  ],
-  exports: [
-    CommonModule,
-    FlexLayoutModule,
-
-    SafeStylePipe,
-
-    AvatarComponent,
-    LogoComponent
-  ],
+  declarations: [SafeStylePipe, AvatarComponent, LogoComponent, LoginDialogComponent],
+  exports: [CommonModule, FlexLayoutModule, SafeStylePipe, AvatarComponent, LogoComponent],
   entryComponents: [LoginDialogComponent]
 })
 export class SharedModule {}
