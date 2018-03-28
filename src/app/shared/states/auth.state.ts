@@ -69,7 +69,8 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
       newUser = {
         email: user.email,
         displayName: user.displayName,
-        photoURL: user.photoURL
+        photoURL: user.photoURL,
+        isNewUser: user.metadata.lastSignInTime === user.metadata.creationTime
       };
     }
 
