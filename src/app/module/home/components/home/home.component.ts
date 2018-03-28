@@ -1,17 +1,23 @@
-import { Component, OnInit } from '@angular/core';
-import { AuthState } from '../../../../shared/states/auth.state';
-import { IUser } from '../../../../shared/interface/user.interface';
-import { Select } from '@ngxs/store';
-import { Observable } from 'rxjs/Observable';
+import {Observable} from "rxjs/Observable";
+
+import { Component } from '@angular/core';
+
+import {Select, Store} from "@ngxs/store";
+
+import {IUser} from "../../../../shared/interface/user.interface";
+import {AuthState} from "../../../../shared/states/auth.state";
+import {ToggleLogin} from "../../../../shared/actions/ui.action";
 
 @Component({
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
   @Select(AuthState.user) readonly user$!: Observable<IUser | null>;
 
-  constructor() {}
+  constructor(readonly store: Store) {}
 
-  ngOnInit() {}
+  onContinueClick(): void {
+    this.store.dispatch(new ToggleLogin());
+  }
 }

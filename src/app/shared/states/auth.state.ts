@@ -64,6 +64,7 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
     let phase: AuthPhase = AuthPhase.LoggedOut;
     let newUser: IUser | undefined;
 
+    console.log(user);
     if (user) {
       phase = AuthPhase.LoggedIn;
       newUser = {
