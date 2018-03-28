@@ -8,6 +8,5 @@ import { UiStateService } from './core/services/state/ui-state.service';
 })
 export class AppComponent {
   constructor(readonly uiSs: UiStateService) {
-    console.log(uiSs);
   }
 }
