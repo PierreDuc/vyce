@@ -1,19 +1,20 @@
-import {Observable} from "rxjs/Observable";
+import { Observable } from 'rxjs/Observable';
 
 import { Component } from '@angular/core';
 
-import {Select, Store} from "@ngxs/store";
+import { Select, Store } from '@ngxs/store';
 
-import {IUser} from "../../../../shared/interface/user.interface";
-import {AuthState} from "../../../../shared/states/auth.state";
-import {ToggleLogin} from "../../../../shared/actions/ui.action";
+import { ToggleLogin } from '../../../../shared/actions/ui.action';
+import { UserState, UserStateModel } from '../../../../shared/states/user.state';
+import { AuthState } from '../../../../shared/states/auth.state';
 
 @Component({
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-  @Select(AuthState.user) readonly user$!: Observable<IUser | null>;
+  @Select(UserState) readonly user$!: Observable<UserStateModel | null>;
+  @Select(AuthState.loggedIn) readonly loggedIn$!: Observable<boolean>;
 
   constructor(readonly store: Store) {}
 

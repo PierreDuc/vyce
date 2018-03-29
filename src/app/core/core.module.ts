@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
 
-import { ModuleWithProviders, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { MatDialogModule } from '@angular/material';
 
 import { NgxsModule } from '@ngxs/store';
@@ -12,16 +12,20 @@ import { UiStateService } from './services/state/ui-state.service';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthState } from '../shared/states/auth.state';
 import { AuthStateService } from './services/state/auth-state.service';
+import { UserState } from '../shared/states/user.state';
+import { UsersCollectionService } from './services/collection/users-collection.service';
+import { AngularFirestoreModule } from 'angularfire2/firestore';
 
 @NgModule({
   imports: [
     AngularFireModule.initializeApp(environment.firebase),
-    NgxsModule.forRoot([UiState, AuthState]),
+    AngularFirestoreModule,
+    NgxsModule.forRoot([UiState, AuthState, UserState]),
     MatDialogModule,
     SharedModule,
     BrowserAnimationsModule
   ],
   exports: [NgxsModule, AngularFireModule],
-  providers: [UiStateService, AuthStateService]
+  providers: [UiStateService, AuthStateService, UsersCollectionService]
 })
 export class CoreModule {}

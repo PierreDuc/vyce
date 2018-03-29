@@ -4,10 +4,10 @@ import { Component } from '@angular/core';
 
 import { Select, Store } from '@ngxs/store';
 
-import { IUser } from '../../../shared/interface/user.interface';
-import { AuthState } from '../../../shared/states/auth.state';
 import { UiStateService } from '../../../core/services/state/ui-state.service';
 import { AuthStateService } from '../../../core/services/state/auth-state.service';
+import { UserState, UserStateModel } from '../../../shared/states/user.state';
+import { AuthState } from '../../../shared/states/auth.state';
 
 @Component({
   selector: 'vc-app-header',
@@ -15,13 +15,13 @@ import { AuthStateService } from '../../../core/services/state/auth-state.servic
   styleUrls: ['./app-header.component.scss']
 })
 export class AppHeaderComponent {
-  @Select(AuthState.user) readonly user$!: Observable<IUser | null>;
+  @Select(UserState) readonly user$!: Observable<UserStateModel | null>;
 
   constructor(readonly us: UiStateService, readonly as: AuthStateService, readonly store: Store) {}
 
   onAvatarClick(): void {
-    this.store
-      .selectOnce<IUser | null>(AuthState.user)
-      .subscribe(user => (user ? this.as.logoutUser() : this.us.toggleLogin()));
+    this.store.selectOnce(AuthState.loggedIn).subscribe(loggedIn => {
+      loggedIn ? this.as.logoutUser() : this.us.toggleLogin();
+    });
   }
 }

@@ -7,18 +7,20 @@ import { Injectable, OnDestroy } from '@angular/core';
 import * as firebase from 'firebase/app';
 import { User } from '@firebase/auth-types';
 
-import { Store } from '@ngxs/store';
+import { Actions, ofAction, Store } from '@ngxs/store';
 import { AngularFireAuth } from 'angularfire2/auth';
 
 import { LoginProvider } from '../../../shared/enums/login-provider.enum';
-import { LoginWithProvider, LogoutUser, SetPersistence, UpdateUser } from '../../../shared/actions/auth.action';
+import { LoginWithProvider, SetPersistence } from '../../../shared/actions/auth.action';
+import { LogoutUser, UpdateUser } from '../../../shared/actions/user.action';
 
 @Injectable()
 export class AuthStateService implements OnDestroy {
   private readonly destroy: Subject<void> = new Subject<void>();
 
-  constructor(readonly store: Store, readonly af: AngularFireAuth) {
+  constructor(readonly store: Store, readonly af: AngularFireAuth, readonly actions$: Actions) {
     af.authState.pipe(takeUntil(this.destroy)).subscribe(user => this.updateUser(user));
+    this.actions$.pipe(takeUntil(this.destroy), ofAction(LogoutUser)).subscribe(() => af.auth.signOut());
   }
 
   ngOnDestroy(): void {
