@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { IUser } from '../../interface/user.interface';
+import { UserStateModel } from '../../states/user.state';
 
 @Component({
   selector: 'vc-avatar',
@@ -7,5 +7,5 @@ import { IUser } from '../../interface/user.interface';
   styleUrls: ['./avatar.component.scss']
 })
 export class AvatarComponent {
-  @Input() user: IUser | null = null;
+  @Input() user: UserStateModel | null = null;
 }

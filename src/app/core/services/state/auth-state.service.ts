@@ -12,7 +12,7 @@ import { AngularFireAuth } from 'angularfire2/auth';
 
 import { LoginProvider } from '../../../shared/enums/login-provider.enum';
 import { LoginWithProvider, SetPersistence } from '../../../shared/actions/auth.action';
-import { LogoutUser, UpdateUser } from '../../../shared/actions/user.action';
+import { LogoutUser, LoginUser } from '../../../shared/actions/user.action';
 
 @Injectable()
 export class AuthStateService implements OnDestroy {
@@ -41,6 +41,10 @@ export class AuthStateService implements OnDestroy {
   }
 
   private updateUser(user: User | null): void {
-    this.store.dispatch(new UpdateUser(user));
+    if (user) {
+      this.store.dispatch(new LoginUser(user));
+    } else {
+      this.store.dispatch(new LogoutUser());
+    }
   }
 }

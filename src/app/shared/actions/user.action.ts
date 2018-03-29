@@ -2,6 +2,6 @@ import { User } from '@firebase/auth-types';
 
 export class LogoutUser {}
 
-export class UpdateUser {
-  constructor(readonly user: User | null) {}
+export class LoginUser {
+  constructor(readonly user: User) {}
 }

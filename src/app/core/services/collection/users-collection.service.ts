@@ -5,10 +5,10 @@ import { AngularFirestore } from 'angularfire2/firestore';
 import { DataCollectionService } from './data-collection.service';
 
 import { DataPath } from '../../../shared/enums/data-path.enum';
-import { IUser } from '../../../shared/interface/user.interface';
+import { UserStateModel } from '../../../shared/states/user.state';
 
 @Injectable()
-export class UsersCollectionService extends DataCollectionService<IUser> {
+export class UsersCollectionService extends DataCollectionService<UserStateModel> {
   constructor(readonly af: AngularFirestore) {
     super(af);
   }

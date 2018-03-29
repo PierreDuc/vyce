@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs/Subject';
 import { Observable } from 'rxjs/Observable';
-import { takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { Injectable, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material';
@@ -10,10 +10,12 @@ import { Select, Store } from '@ngxs/store';
 import { HideLogin, ToggleLogin } from '../../../shared/actions/ui.action';
 import { UiState, UiStateModel } from '../../../shared/states/ui.state';
 import { LoginDialogComponent } from '../../../shared/components/dialog/login-dialog/login-dialog.component';
+import { AuthState } from '../../../shared/states/auth.state';
 
 @Injectable()
 export class UiStateService implements OnDestroy {
   @Select(UiState) uiState$!: Observable<UiStateModel>;
+  @Select(AuthState.loggedIn) loggedIn$!: Observable<boolean>;
 
   private destroy: Subject<void> = new Subject<void>();
 
@@ -27,6 +29,10 @@ export class UiStateService implements OnDestroy {
         this.hideLoginDialog();
       }
     });
+
+    this.loggedIn$
+      .pipe(takeUntil(this.destroy), filter(loggedIn => loggedIn))
+      .subscribe(() => this.store.dispatch(new HideLogin()));
   }
 
   ngOnDestroy(): void {

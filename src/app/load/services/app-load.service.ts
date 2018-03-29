@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Actions, ofAction } from '@ngxs/store';
 
 import { AuthStateService } from '../../core/services/state/auth-state.service';
-import { UpdateUser } from '../../shared/actions/user.action';
+import { SetPhase } from '../../shared/actions/auth.action';
 
 @Injectable()
 export class AppLoadService {
@@ -13,6 +13,6 @@ export class AppLoadService {
 
   async initAuth(): Promise<void> {
     await this.as.initAuth();
-    await this.actions$.pipe(ofAction(UpdateUser), first()).toPromise();
+    await this.actions$.pipe(ofAction(SetPhase), first()).toPromise();
   }
 }

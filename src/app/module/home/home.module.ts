@@ -1,11 +1,17 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { HomeComponent } from './components/home/home.component';
+import { MatDividerModule, MatGridListModule } from '@angular/material';
+import { SharedModule } from '../../shared/shared.module';
 
 @NgModule({
-  imports: [CommonModule, RouterModule.forChild([{ path: '', component: HomeComponent }])],
+  imports: [
+    SharedModule,
+    RouterModule.forChild([{ path: '', component: HomeComponent }]),
+    MatGridListModule,
+    MatDividerModule
+  ],
   declarations: [HomeComponent]
 })
 export class HomeModule {}

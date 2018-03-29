@@ -1,13 +1,16 @@
 import { Action, State, StateContext } from '@ngxs/store';
 
-import { IUser } from '../interface/user.interface';
 import { AuthPhase } from '../enums/auth-phase.enum';
-import { LogoutUser, UpdateUser } from '../actions/user.action';
+import { LogoutUser, LoginUser } from '../actions/user.action';
 import { SetPhase } from '../actions/auth.action';
 import { UsersCollectionService } from '../../core/services/collection/users-collection.service';
+import { IData } from '../interface/data.interface';
 
-export interface UserStateModel extends IUser {
-  id: string | null;
+export interface UserStateModel extends IData {
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+  isNewUser?: boolean;
 }
 
 @State<UserStateModel>({
@@ -20,31 +23,29 @@ export class UserState<T extends StateContext<UserStateModel>> {
   constructor(readonly us: UsersCollectionService) {}
 
   @Action(LogoutUser)
-  logoutUser({ dispatch }: T): void {
-    dispatch(new UpdateUser(null));
+  logoutUser({ dispatch, setState }: T): void {
+    setState({ id: null });
+    dispatch(new SetPhase(AuthPhase.LoggedOut));
   }
 
-  @Action(UpdateUser)
-  async updateUser({ setState, dispatch }: T, { user }: UpdateUser): Promise<void> {
-    let phase: AuthPhase = AuthPhase.LoggedOut;
-    let newUser: IUser | UserStateModel = { id: null };
+  @Action(LoginUser)
+  async loginUser({ setState, dispatch }: T, { user }: LoginUser): Promise<void> {
+    const loginUser: UserStateModel = {
+      id: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      photoURL: user.photoURL
+    };
 
-    if (user != null) {
-      phase = AuthPhase.LoggedIn;
-      newUser = {
-        id: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        isNewUser: user.metadata.lastSignInTime === user.metadata.creationTime
-      };
+    if (loginUser.id) {
+      if ((await this.us.get(loginUser.id)).get('id') !== loginUser.id) {
+        await this.us.set({ id: loginUser.id });
 
-      if (newUser.isNewUser && newUser.id) {
-        await this.us.insert(newUser);
+        loginUser.isNewUser = true;
       }
     }
 
-    setState(newUser);
-    dispatch(new SetPhase(phase));
+    setState(loginUser);
+    dispatch(new SetPhase(AuthPhase.LoggedIn));
   }
 }

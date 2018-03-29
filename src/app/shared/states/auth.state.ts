@@ -6,7 +6,6 @@ import { AngularFireAuth } from 'angularfire2/auth';
 import { LoginWithProvider, SetPersistence, SetPhase } from '../actions/auth.action';
 import { LoginProvider } from '../enums/login-provider.enum';
 import { AuthPhase } from '../enums/auth-phase.enum';
-import { HideLogin } from '../actions/ui.action';
 
 export interface AuthStateModel {
   phase: AuthPhase;
@@ -46,8 +45,6 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
     dispatch(new SetPhase(AuthPhase.Authenticating));
 
     await this.afAuth.auth.signInWithPopup(new this.authProviders[provider]());
-
-    dispatch(new HideLogin());
   }
 
   @Action(SetPhase)
