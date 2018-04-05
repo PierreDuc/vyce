@@ -1,0 +1,20 @@
+<header class="mat-display-1">
+  Welcome
+  <ng-container *ngIf="(loggedIn$ | async) && (user$ | async) as user">{{user.isNewUser ? '' : 'back'}}
+  </ng-container>
+  to VYCE
+  <ng-container *ngIf="(user$ | async)?.displayName as name">, {{name}}</ng-container>
+  !
+</header>
+<article class="mat-subheading-1">
+  A portal for those who want to look through their cameras at all time. You can add your current device or manage
+  your linked devices.
+  <ng-container *ngIf="!(loggedIn$ | async)">
+    <br>
+    You have to
+    <strong class="vc-text-action" (click)="onContinueClick()">login</strong>
+    or
+    <strong class="vc-text-action" (click)="onContinueClick()">register</strong>
+    first before you can use this service.
+  </ng-container>
+</article>
