@@ -4,7 +4,6 @@ import { LoginProvider } from '../../../enums/login-provider.enum';
 import { AuthStateService } from '../../../../core/services/state/auth-state.service';
 
 @Component({
-  selector: 'vc-login-dialog',
   templateUrl: './login-dialog.component.html',
   styleUrls: ['./login-dialog.component.scss']
 })

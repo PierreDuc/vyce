@@ -23,8 +23,16 @@ body {
   }
 }
 
-.mat-button-wrapper {
-  display: flex;
+
+.mat-icon-button {
+  .mat-button-wrapper {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+.mat-dialog-content {
+  padding: 24px !important;
 }
 
 .default-route-container {

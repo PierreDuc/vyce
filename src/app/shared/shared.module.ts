@@ -1,17 +1,27 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatButtonModule, MatIconModule } from '@angular/material';
+import { MatButtonModule, MatDialogModule, MatIconModule, MatRadioModule } from '@angular/material';
 
 import { LogoComponent } from './components/logo/logo.component';
 import { SafeStylePipe } from './pipes/safe-style.pipe';
 import { AvatarComponent } from './components/avatar/avatar.component';
 import { LoginDialogComponent } from './components/dialog/login-dialog/login-dialog.component';
+import { AddDeviceDialogComponent } from './components/dialog/add-device-dialog/add-device-dialog.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
-  imports: [CommonModule, FlexLayoutModule, MatIconModule, MatButtonModule],
-  declarations: [SafeStylePipe, AvatarComponent, LogoComponent, LoginDialogComponent],
+  imports: [
+    CommonModule,
+    FlexLayoutModule,
+    MatIconModule,
+    MatButtonModule,
+    MatRadioModule,
+    FormsModule,
+    MatDialogModule
+  ],
+  declarations: [SafeStylePipe, AvatarComponent, LogoComponent, LoginDialogComponent, AddDeviceDialogComponent],
   exports: [CommonModule, FlexLayoutModule, SafeStylePipe, AvatarComponent, LogoComponent],
-  entryComponents: [LoginDialogComponent]
+  entryComponents: [LoginDialogComponent, AddDeviceDialogComponent]
 })
 export class SharedModule {}

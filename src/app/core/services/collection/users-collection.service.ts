@@ -8,9 +8,9 @@ import { FirebaseService } from '../../module/firebase.service';
 
 @Injectable()
 export class UsersCollectionService extends DataCollectionService<UserStateModel> {
-  constructor(readonly fs: FirebaseService) {
+  dataPath: DataPath = DataPath.Users;
+
+  constructor(protected readonly fs: FirebaseService) {
     super(fs);
   }
-
-  dataPath: DataPath = DataPath.Users;
 }

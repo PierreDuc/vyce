@@ -1,18 +1,17 @@
 import { Injectable } from '@angular/core';
+import { Store } from '@ngxs/store';
+import { ShowAddDevice } from '../../shared/actions/ui.action';
 
 @Injectable()
 export class MediaDevicesService {
+  constructor(private readonly store: Store) {}
+
   public async addLocalAvailable(): Promise<void> {
     try {
       const stream: MediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      stream.stop();
+      stream.getTracks().forEach(track => track.stop());
 
-      const ids: string[] = [
-        ...stream.getVideoTracks().map(vt => vt.getSettings().deviceId as string),
-        ...stream.getAudioTracks().map(at => at.getSettings().deviceId as string)
-      ];
-
-      console.log(ids);
+      this.store.dispatch(new ShowAddDevice());
     } catch {}
   }
 }

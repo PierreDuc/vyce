@@ -1,10 +1,12 @@
+import { Type } from '@angular/core';
+import { MatDialogRef } from '@angular/material';
+
 import { Action, State, StateContext } from '@ngxs/store';
 
-import { HideLogin, ShowLogin, ToggleLogin } from '../actions/ui.action';
+import { HideAddDevice, HideLogin, ShowAddDevice, ShowLogin, ToggleLogin } from '../actions/ui.action';
 import { UiStateService } from '../../core/services/state/ui-state.service';
 import { LoginDialogComponent } from '../components/dialog/login-dialog/login-dialog.component';
-import { MatDialogRef } from '@angular/material';
-import { Type } from '@angular/core';
+import { AddDeviceDialogComponent } from '../components/dialog/add-device-dialog/add-device-dialog.component';
 
 export interface UiStateModel {
   dialogs: {
@@ -23,13 +25,16 @@ export interface UiStateModel {
   }
 })
 export class UiState<T extends StateContext<UiStateModel>> {
-  readonly refs: { [key: string]: MatDialogRef<any> } = {};
+  readonly dialogs = new Map<keyof UiStateModel['dialogs'], { dialog: Type<any>; ref?: MatDialogRef<any> }>([
+    ['login', { dialog: LoginDialogComponent }],
+    ['addDevice', { dialog: AddDeviceDialogComponent }]
+  ]);
 
   constructor(private readonly us: UiStateService) {}
 
   @Action(ShowLogin)
   showLogin(ctx: T): void {
-    this.showDialog(ctx, 'login', LoginDialogComponent);
+    this.showDialog(ctx, 'login');
   }
 
   @Action(HideLogin)
@@ -42,29 +47,42 @@ export class UiState<T extends StateContext<UiStateModel>> {
     getState().dialogs.login ? dispatch(HideLogin) : dispatch(ShowLogin);
   }
 
-  private showDialog(ctx: T, dialog: keyof UiStateModel['dialogs'], type: Type<any>): void {
+  @Action(ShowAddDevice)
+  showAddDevice(ctx: T): void {
+    this.showDialog(ctx, 'addDevice');
+  }
+
+  @Action(HideAddDevice)
+  hideAddDevice(ctx: T): void {
+    this.hideDialog(ctx, 'addDevice');
+  }
+
+  private showDialog(ctx: T, dialog: keyof UiStateModel['dialogs']): void {
     const { getState } = ctx;
+    const dialogType = this.dialogs.get(dialog);
 
-    if (!getState().dialogs[dialog]) {
-      this.refs[dialog] = this.us.showDialog(type);
+    if (!getState().dialogs[dialog] && dialogType) {
+      dialogType.ref = this.us.showDialog(dialogType.dialog);
 
-      this.refs[dialog].afterClosed().subscribe(() => {
-        this.patchDialog(ctx, dialog, false);
+      dialogType.ref.afterClosed().subscribe(() => {
+        this.patchDialogState(ctx, dialog, false);
 
-        delete this.refs[dialog];
+        delete dialogType.ref;
       });
 
-      this.patchDialog(ctx, dialog, true);
+      this.patchDialogState(ctx, dialog, true);
     }
   }
 
   private hideDialog({ getState }: T, dialog: keyof UiStateModel['dialogs']): void {
-    if (getState().dialogs[dialog] && this.refs[dialog]) {
-      this.refs[dialog].close();
+    const dialogType = this.dialogs.get(dialog);
+
+    if (getState().dialogs[dialog] && dialogType && dialogType.ref) {
+      dialogType.ref.close();
     }
   }
 
-  private patchDialog({ patchState, getState }: T, dialog: keyof UiStateModel['dialogs'], set: boolean): void {
+  private patchDialogState({ patchState, getState }: T, dialog: keyof UiStateModel['dialogs'], set: boolean): void {
     const dialogs: UiStateModel['dialogs'] = getState().dialogs;
     dialogs[dialog] = set;
 

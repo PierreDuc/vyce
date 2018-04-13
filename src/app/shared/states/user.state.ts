@@ -1,13 +1,13 @@
-import { Action, State, StateContext } from '@ngxs/store';
+import {Action, Selector, State, StateContext} from '@ngxs/store';
 
 import { AuthPhase } from '../enums/auth-phase.enum';
-import { LogoutUser, LoginUser } from '../actions/user.action';
+import { LogoutUser, LoginUser} from '../actions/user.action';
 import { SetPhase } from '../actions/auth.action';
 import { UsersCollectionService } from '../../core/services/collection/users-collection.service';
-import { IData } from '../interface/data.interface';
 import { HideLogin } from '../actions/ui.action';
 
-export interface UserStateModel extends IData {
+export interface UserStateModel {
+  uid?: string | null;
   email?: string | null;
   displayName?: string | null;
   photoURL?: string | null;
@@ -17,30 +17,32 @@ export interface UserStateModel extends IData {
 @State<UserStateModel>({
   name: 'user',
   defaults: {
-    id: null
+    uid: null
   }
 })
 export class UserState<T extends StateContext<UserStateModel>> {
   constructor(readonly us: UsersCollectionService) {}
 
+  @Selector()
+
   @Action(LogoutUser)
   logoutUser({ dispatch, setState }: T): void {
-    setState({ id: null });
+    setState({ uid: null });
     dispatch(new SetPhase(AuthPhase.LoggedOut));
   }
 
   @Action(LoginUser)
   async loginUser({ setState, dispatch }: T, { user }: LoginUser): Promise<void> {
     const loginUser: UserStateModel = {
-      id: user.uid,
+      uid: user.uid,
       email: user.email,
       displayName: user.displayName,
       photoURL: user.photoURL
     };
 
-    if (loginUser.id) {
-      if ((await this.us.get(loginUser.id)).get('id') !== loginUser.id) {
-        await this.us.set({ id: loginUser.id });
+    if (loginUser.uid) {
+      if ((await this.us.get(loginUser.uid)).get('uid') !== loginUser.uid) {
+        await this.us.set({ uid: loginUser.uid }, loginUser.uid);
 
         loginUser.isNewUser = true;
       }

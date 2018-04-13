@@ -1,4 +1,4 @@
-import { User } from '@firebase/auth-types';
+import {User} from '@firebase/auth-types';
 
 export class LogoutUser {
   static type = '[USER] Logout current user';
@@ -9,3 +9,4 @@ export class LoginUser {
 
   constructor(readonly user: User) {}
 }
+
