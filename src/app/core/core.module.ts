@@ -4,7 +4,6 @@ import { NgModule } from '@angular/core';
 import { MatDialogModule } from '@angular/material';
 
 import { NgxsModule } from '@ngxs/store';
-import { AngularFireModule } from 'angularfire2';
 
 import { UiState } from '../shared/states/ui.state';
 import { SharedModule } from '../shared/shared.module';
@@ -14,18 +13,18 @@ import { AuthState } from '../shared/states/auth.state';
 import { AuthStateService } from './services/state/auth-state.service';
 import { UserState } from '../shared/states/user.state';
 import { UsersCollectionService } from './services/collection/users-collection.service';
-import { AngularFirestoreModule } from 'angularfire2/firestore';
+import { FirebaseModule } from './module/firebase.module';
+import { MediaDevicesService } from './services/media-devices.service';
 
 @NgModule({
   imports: [
-    AngularFireModule.initializeApp(environment.firebase),
-    AngularFirestoreModule,
+    FirebaseModule.initialize(environment.firebase),
     NgxsModule.forRoot([UiState, AuthState, UserState]),
     MatDialogModule,
     SharedModule,
     BrowserAnimationsModule
   ],
-  exports: [NgxsModule, AngularFireModule],
-  providers: [UiStateService, AuthStateService, UsersCollectionService]
+  exports: [NgxsModule],
+  providers: [UiStateService, AuthStateService, UsersCollectionService, MediaDevicesService]
 })
 export class CoreModule {}

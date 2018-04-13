@@ -1,11 +1,11 @@
 import * as firebase from 'firebase/app';
 
 import { Action, Selector, State, StateContext } from '@ngxs/store';
-import { AngularFireAuth } from 'angularfire2/auth';
 
 import { LoginWithProvider, SetPersistence, SetPhase } from '../actions/auth.action';
 import { LoginProvider } from '../enums/login-provider.enum';
 import { AuthPhase } from '../enums/auth-phase.enum';
+import { FirebaseService } from '../../core/module/firebase.service';
 
 export interface AuthStateModel {
   phase: AuthPhase;
@@ -20,12 +20,12 @@ export interface AuthStateModel {
   }
 })
 export class AuthState<T extends StateContext<AuthStateModel>> {
-  private readonly authProviders: { [k in LoginProvider]: { new (): firebase.auth.AuthProvider } } = {
+  private authProviders: { [k in LoginProvider]: { new (): firebase.auth.AuthProvider } } = {
     [LoginProvider.Google]: firebase.auth.GoogleAuthProvider,
     [LoginProvider.Facebook]: firebase.auth.FacebookAuthProvider
   };
 
-  constructor(readonly afAuth: AngularFireAuth) {}
+  constructor(readonly fs: FirebaseService) {}
 
   @Selector()
   static loggedIn(state: AuthStateModel): boolean {
@@ -34,7 +34,7 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
 
   @Action(SetPersistence)
   async setPersistence({ patchState }: T, { persistence }: SetPersistence): Promise<void> {
-    await this.afAuth.auth.setPersistence(persistence);
+    await this.fs.auth().setPersistence(persistence);
 
     patchState({ persistence });
   }
@@ -44,7 +44,7 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
     patchState({ provider });
     dispatch(new SetPhase(AuthPhase.Authenticating));
 
-    await this.afAuth.auth.signInWithPopup(new this.authProviders[provider]());
+    await this.fs.auth().signInWithPopup(new this.authProviders[provider]());
   }
 
   @Action(SetPhase)

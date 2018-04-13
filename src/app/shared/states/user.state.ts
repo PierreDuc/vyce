@@ -5,6 +5,7 @@ import { LogoutUser, LoginUser } from '../actions/user.action';
 import { SetPhase } from '../actions/auth.action';
 import { UsersCollectionService } from '../../core/services/collection/users-collection.service';
 import { IData } from '../interface/data.interface';
+import { HideLogin } from '../actions/ui.action';
 
 export interface UserStateModel extends IData {
   email?: string | null;
@@ -46,6 +47,6 @@ export class UserState<T extends StateContext<UserStateModel>> {
     }
 
     setState(loginUser);
-    dispatch(new SetPhase(AuthPhase.LoggedIn));
+    dispatch([new HideLogin(), new SetPhase(AuthPhase.LoggedIn)]);
   }
 }

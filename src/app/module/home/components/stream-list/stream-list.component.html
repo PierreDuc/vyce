@@ -1,3 +1,11 @@
-<p>
-  stream-list works!
-</p>
+<div fxLayout fxLayoutGap="10px" class="stream-list">
+  <mat-card class="no-signal"></mat-card>
+  <mat-card class="add-current">
+    <button mat-button (click)="onAddCurrentClick()">
+      <span class="inside-wrap" fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="6px">
+        <mat-icon>add_a_photo</mat-icon>
+        <span>Add this device</span>
+      </span>
+    </button>
+  </mat-card>
+</div>

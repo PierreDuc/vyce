@@ -1,17 +1,16 @@
 import { Injectable } from '@angular/core';
 
-import { AngularFirestore } from 'angularfire2/firestore';
-
 import { DataCollectionService } from './data-collection.service';
 
 import { DataPath } from '../../../shared/enums/data-path.enum';
 import { UserStateModel } from '../../../shared/states/user.state';
+import { FirebaseService } from '../../module/firebase.service';
 
 @Injectable()
 export class UsersCollectionService extends DataCollectionService<UserStateModel> {
-  constructor(readonly af: AngularFirestore) {
-    super(af);
+  constructor(readonly fs: FirebaseService) {
+    super(fs);
   }
 
-  readonly dataPath: DataPath = DataPath.Users;
+  dataPath: DataPath = DataPath.Users;
 }

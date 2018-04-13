@@ -1,12 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { MediaDevicesService } from '../../../../core/services/media-devices.service';
 
 @Component({
   selector: 'vc-stream-list',
   templateUrl: './stream-list.component.html',
   styleUrls: ['./stream-list.component.scss']
 })
-export class StreamListComponent implements OnInit {
-  constructor() {}
+export class StreamListComponent {
+  constructor(private readonly md: MediaDevicesService) {}
 
-  ngOnInit() {}
+  onAddCurrentClick(): void {
+    this.md.addLocalAvailable();
+  }
 }
