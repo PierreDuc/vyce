@@ -10,5 +10,5 @@ import { LogoSize } from '../../enums/logo-size.enum';
 export class LogoComponent {
   @Input() size: LogoSize = LogoSize.X1;
 
-  @Input() showName: boolean = false;
+  @Input() showName = false;
 }

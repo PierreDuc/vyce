@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
 
 import { Select, Store } from '@ngxs/store';
 
-import { ToggleLogin } from '../../../../../shared/actions/ui.action';
+import { ShowLogin } from '../../../../../shared/actions/ui.action';
 import { AuthState } from '../../../../../shared/states/auth.state';
 import { UserState, UserStateModel } from '../../../../../shared/states/user.state';
 
@@ -17,9 +17,9 @@ export class HomeWelcomeComponent {
   @Select(UserState) readonly user$!: Observable<UserStateModel | null>;
   @Select(AuthState.loggedIn) readonly loggedIn$!: Observable<boolean>;
 
-  constructor(readonly store: Store) {}
+  constructor(private readonly store: Store) {}
 
   onContinueClick(): void {
-    this.store.dispatch(new ToggleLogin());
+    this.store.dispatch(new ShowLogin());
   }
 }

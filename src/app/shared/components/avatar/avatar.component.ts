@@ -7,5 +7,5 @@ import { UserStateModel } from '../../states/user.state';
   styleUrls: ['./avatar.component.scss']
 })
 export class AvatarComponent {
-  @Input() user: UserStateModel | null = null;
+  @Input() user!: UserStateModel;
 }

@@ -3,7 +3,7 @@ import { MatDialogRef } from '@angular/material';
 
 import { Action, State, StateContext } from '@ngxs/store';
 
-import { HideAddDevice, HideLogin, ShowAddDevice, ShowLogin, ToggleLogin } from '../actions/ui.action';
+import { HideAddDevice, HideLogin, ShowAddDevice, ShowLogin } from '../actions/ui.action';
 import { UiStateService } from '../../core/services/state/ui-state.service';
 import { LoginDialogComponent } from '../components/dialog/login-dialog/login-dialog.component';
 import { AddDeviceDialogComponent } from '../components/dialog/add-device-dialog/add-device-dialog.component';
@@ -40,11 +40,6 @@ export class UiState<T extends StateContext<UiStateModel>> {
   @Action(HideLogin)
   hideLogin(ctx: T): void {
     this.hideDialog(ctx, 'login');
-  }
-
-  @Action(ToggleLogin)
-  toggleLogin({ dispatch, getState }: T): void {
-    getState().dialogs.login ? dispatch(HideLogin) : dispatch(ShowLogin);
   }
 
   @Action(ShowAddDevice)

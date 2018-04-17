@@ -1,6 +1,6 @@
 <div fxLayout fxLayoutGap="10px" class="stream-list">
-  <mat-card class="no-signal"></mat-card>
-  <mat-card class="add-current">
+  <mat-card *ngFor="let device of devices$ | async" class="no-signal"></mat-card>
+  <mat-card *ngIf="canAddCurrent$ | async" class="add-current">
     <button mat-button (click)="onAddCurrentClick()">
       <span class="inside-wrap" fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="6px">
         <mat-icon>add_a_photo</mat-icon>

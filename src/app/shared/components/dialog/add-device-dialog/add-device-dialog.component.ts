@@ -1,77 +1,68 @@
-import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs/index';
+import { map } from 'rxjs/operators';
+
+import { Component } from '@angular/core';
+
 import { Store } from '@ngxs/store';
+
 import { AddDevice } from '../../../actions/devices.action';
+import { MediaDevicesService } from '../../../../core/services/media-devices.service';
+import { DeviceStateModel } from '../../../states/devices.state';
+import { InputKind } from '../../../enums/input-kind.enum';
+import { DeviceType } from '../../../enums/device-type.enum';
+
+interface MediaInputType {
+  disabled?: boolean;
+  selected?: MediaDeviceInfo;
+  devices: MediaDeviceInfo[];
+}
+
+interface MediaInputs {
+  audio: MediaInputType;
+  video: MediaInputType;
+}
 
 @Component({
   templateUrl: './add-device-dialog.component.html',
   styleUrls: ['./add-device-dialog.component.scss']
 })
-export class AddDeviceDialogComponent implements OnInit {
-  disableVideo = false;
-  disableAudio = false;
+export class AddDeviceDialogComponent {
+  readonly inputs$: Observable<MediaInputs>;
 
-  videoDevice: MediaDeviceInfo | undefined;
-  videoDevices: MediaDeviceInfo[] = [];
-
-  audioDevice: MediaDeviceInfo | undefined;
-  audioDevices: MediaDeviceInfo[] = [];
-
-  constructor(private readonly store: Store) {}
-
-  async ngOnInit(): Promise<void> {
-    const devices: MediaDeviceInfo[] = await navigator.mediaDevices.enumerateDevices();
-    const defaultAudio: MediaDeviceInfo | undefined = devices.find(
-      device => device.deviceId === 'default' && device.kind === 'audioinput'
+  constructor(private readonly store: Store, private readonly md: MediaDevicesService) {
+    this.inputs$ = this.md.devices$.pipe(
+      map(({ audio, video }) => ({
+        audio: this.filterDevices(audio),
+        video: this.filterDevices(video)
+      }))
     );
-    const defaultVideo: MediaDeviceInfo | undefined = devices.find(
-      device => device.deviceId === 'default' && device.kind === 'videoinput'
-    );
-    const nonDefaults: MediaDeviceInfo[] = devices.filter(
-      device => device.deviceId !== 'default' && device.deviceId !== 'communications'
-    );
-    this.audioDevices = nonDefaults.filter(device => device.kind === 'audioinput');
-    this.videoDevices = nonDefaults.filter(device => device.kind === 'videoinput');
+  }
 
-    if (defaultAudio) {
-      this.audioDevice = this.audioDevices.find(device => device.groupId === defaultAudio.groupId);
-    }
+  onSwitchClick(input: MediaInputType): void {
+    input.disabled = !input.disabled;
+    input.selected = undefined;
+  }
 
-    if (defaultVideo) {
-      this.videoDevice = this.videoDevices.find(device => device.groupId === defaultVideo.groupId);
-    }
+  onAddDeviceClick({ audio, video }: MediaInputs): void {
+    const device: DeviceStateModel = {
+      audio: (!audio.disabled && audio.selected) || false,
+      video: (!video.disabled && video.selected) || false
+    };
 
-    if (!this.audioDevice && this.audioDevices.length === 1) {
-      this.audioDevice = this.audioDevices[0];
-    }
-
-    if (!this.videoDevice && this.videoDevices.length === 1) {
-      this.videoDevice = this.videoDevices[0];
+    if (device.audio || device.video) {
+      this.store.dispatch(new AddDevice(device));
     }
   }
 
-  onSwitchAudioClick(): void {
-    this.disableAudio = !this.disableAudio;
-    this.audioDevice = undefined;
-  }
+  private filterDevices(devices: MediaDeviceInfo[]): MediaInputType {
+    const standard: MediaDeviceInfo | undefined = devices.find(device => device.deviceId === DeviceType.Default);
+    const inputType: MediaInputType = {
+      selected: (standard && devices.find(i => i.groupId === standard.groupId && i !== standard)) || devices[0],
+      devices: devices.filter(input => !DeviceType.includes(input.deviceId))
+    };
 
-  onSwitchVideoClick(): void {
-    this.disableVideo = !this.disableVideo;
-    this.videoDevice = undefined;
-  }
+    inputType.disabled = inputType.devices.length === 0;
 
-  onAddDeviceClick(): void {
-    const devices: MediaDeviceInfo[] = [];
-
-    if (!this.disableAudio && this.audioDevice) {
-      devices.push(this.audioDevice);
-    }
-
-    if (!this.disableVideo && this.videoDevice) {
-      devices.push(this.videoDevice);
-    }
-
-    if (devices.length > 0) {
-      this.store.dispatch(new AddDevice(devices));
-    }
+    return inputType;
   }
 }

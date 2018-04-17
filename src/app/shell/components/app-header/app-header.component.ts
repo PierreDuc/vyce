@@ -7,7 +7,7 @@ import { Select, Store } from '@ngxs/store';
 import { AuthStateService } from '../../../core/services/state/auth-state.service';
 import { UserState, UserStateModel } from '../../../shared/states/user.state';
 import { AuthState } from '../../../shared/states/auth.state';
-import { ToggleLogin } from '../../../shared/actions/ui.action';
+import { ShowLogin } from '../../../shared/actions/ui.action';
 
 @Component({
   selector: 'vc-app-header',
@@ -21,7 +21,7 @@ export class AppHeaderComponent {
 
   onAvatarClick(): void {
     this.store.selectOnce(AuthState.loggedIn).subscribe(loggedIn => {
-      loggedIn ? this.as.logoutUser() : this.store.dispatch(new ToggleLogin());
+      loggedIn ? this.as.logoutUser() : this.store.dispatch(new ShowLogin());
     });
   }
 }

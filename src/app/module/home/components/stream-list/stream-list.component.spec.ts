@@ -6,13 +6,11 @@ describe('StreamListComponent', () => {
   let component: StreamListComponent;
   let fixture: ComponentFixture<StreamListComponent>;
 
-  beforeEach(
-    async(() => {
-      TestBed.configureTestingModule({
-        declarations: [StreamListComponent]
-      }).compileComponents();
-    })
-  );
+  beforeEach(async(() => {
+    TestBed.configureTestingModule({
+      declarations: [StreamListComponent]
+    }).compileComponents();
+  }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(StreamListComponent);

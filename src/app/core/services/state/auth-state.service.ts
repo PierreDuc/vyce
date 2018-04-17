@@ -1,31 +1,24 @@
-import { Subject } from 'rxjs/Subject';
-import { Observable } from 'rxjs/Observable';
-import { takeUntil } from 'rxjs/operators';
-
-import { Injectable, OnDestroy } from '@angular/core';
-
 import * as firebase from 'firebase/app';
+
+import { Observable } from 'rxjs/Observable';
+
+import { Injectable } from '@angular/core';
+
 import { User } from '@firebase/auth-types';
 
 import { Actions, ofAction, Store } from '@ngxs/store';
 
-import { LoginProvider } from '../../../shared/enums/login-provider.enum';
-import { LoginWithProvider, SetPersistence } from '../../../shared/actions/auth.action';
-import { LoginUser, LogoutUser } from '../../../shared/actions/user.action';
 import { FirebaseService } from '../../module/firebase.service';
 
+import { LoginProvider } from '../../../shared/enums/login-provider.enum';
+import { LoginUser, LogoutUser } from '../../../shared/actions/user.action';
+import { LoginWithProvider, SetPersistence } from '../../../shared/actions/auth.action';
+
 @Injectable()
-export class AuthStateService implements OnDestroy {
-  private destroy: Subject<void> = new Subject<void>();
-
-  constructor(readonly store: Store, readonly fs: FirebaseService, readonly actions$: Actions) {
+export class AuthStateService {
+  constructor(private readonly store: Store, fs: FirebaseService, actions$: Actions) {
     fs.auth().onAuthStateChanged(user => this.updateUser(user));
-    this.actions$.pipe(takeUntil(this.destroy), ofAction(LogoutUser)).subscribe(() => fs.auth().signOut());
-  }
-
-  ngOnDestroy(): void {
-    this.destroy.next();
-    this.destroy.complete();
+    actions$.pipe(ofAction(LogoutUser)).subscribe(() => fs.auth().signOut());
   }
 
   public loginWithProvider(provider: LoginProvider): Observable<any> {
@@ -41,10 +34,6 @@ export class AuthStateService implements OnDestroy {
   }
 
   private updateUser(user: User | null): void {
-    if (user) {
-      this.store.dispatch(new LoginUser(user));
-    } else {
-      this.store.dispatch(new LogoutUser());
-    }
+    this.store.dispatch(user ? new LoginUser(user) : new LogoutUser());
   }
 }

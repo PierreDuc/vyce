@@ -1,13 +1,18 @@
-import {Action, State, StateContext} from '@ngxs/store';
+import { Action, State, StateContext } from '@ngxs/store';
 
-import {DevicesCollectionService} from "../../core/services/collection/devices-collection.service";
-import {AddDevice} from "../actions/devices.action";
+import { DevicesCollectionService } from '../../core/services/collection/devices-collection.service';
+import { AddDevice, ClearDevices, ListDevices } from '../actions/devices.action';
+import { MediaDevicesService } from '../../core/services/media-devices.service';
 
-export interface DeviceStateModel {
+export interface DeviceInputModel {
   deviceId: string;
   kind: MediaDeviceKind;
   label: string;
-  groupId: string;
+}
+
+export interface DeviceStateModel {
+  audio: DeviceInputModel | false;
+  video: DeviceInputModel | false;
 }
 
 @State<DeviceStateModel[]>({
@@ -15,17 +20,35 @@ export interface DeviceStateModel {
   defaults: []
 })
 export class DevicesState<T extends StateContext<DeviceStateModel[]>> {
-  constructor(readonly dc: DevicesCollectionService) {}
+  constructor(private readonly dc: DevicesCollectionService) {}
+
+  @Action(ClearDevices)
+  clearDevices({ setState }: T): void {
+    setState([]);
+  }
+
+  @Action(ListDevices)
+  listDevices({ setState }: T): void {
+    this.dc.getDocs$().subscribe(docs => {
+      setState(docs);
+    });
+  }
 
   @Action(AddDevice)
-  async addDevice({ setState }: T, { devices }: AddDevice): Promise<void> {
-    const groupId: string = this.dc.createPushId();
+  addDevice(ctx: T, { device }: AddDevice): Promise<any> {
+    return this.dc.add({
+      audio: this.createInputDevice(device.audio),
+      video: this.createInputDevice(device.video)
+    });
+  }
 
-    await Promise.all(devices.map(device => this.dc.add({
-      deviceId: device.deviceId,
-      kind: device.kind,
-      label: device.label,
-      groupId
-    })));
+  private createInputDevice(device: DeviceInputModel | false): DeviceInputModel | false {
+    return (
+      device && {
+        deviceId: device.deviceId,
+        label: device.label,
+        kind: device.kind
+      }
+    );
   }
 }
