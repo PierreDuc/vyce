@@ -1,7 +1,7 @@
 import { environment } from '../../environments/environment';
 
 import { NgModule } from '@angular/core';
-import { MatDialogModule } from '@angular/material';
+import {MatDialogModule, MatSnackBarModule} from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { NgxsModule } from '@ngxs/store';
@@ -25,6 +25,7 @@ import { IndexDbUserService } from './services/index-db-user.service';
   imports: [
     FirebaseModule.initialize(environment.firebase),
     NgxsModule.forRoot([UiState, AuthState, UserState, DevicesState]),
+    MatSnackBarModule,
     MatDialogModule,
     SharedModule,
     BrowserAnimationsModule

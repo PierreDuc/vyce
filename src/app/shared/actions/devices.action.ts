@@ -1,9 +1,15 @@
 import { DeviceStateModel } from '../states/devices.state';
 
-export class AddDevice {
+export class AddLocalDevice {
   static readonly type = '[DEVICES] Add device';
 
   constructor(readonly device: DeviceStateModel) {}
+}
+
+export class RemoveLocalDevice {
+  static readonly type = '[DEVICES] Remove local device';
+
+  constructor(readonly deviceId: string) {}
 }
 
 export class ListDevices {

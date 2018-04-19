@@ -4,7 +4,7 @@ import { AuthPhase } from '../enums/auth-phase.enum';
 
 import { UsersCollectionService } from '../../core/services/collection/users-collection.service';
 
-import { HideLogin } from '../actions/ui.action';
+import {HideLogin, ShowSnackbar} from '../actions/ui.action';
 import { SetPhase } from '../actions/auth.action';
 import { ClearDevices, ListDevices } from '../actions/devices.action';
 import { LogoutUser, LoginUser } from '../actions/user.action';
@@ -33,9 +33,17 @@ export class UserState<T extends StateContext<UserStateModel>> {
   }
 
   @Action(LogoutUser)
-  logoutUser({ dispatch, setState }: T): void {
+  logoutUser({ dispatch, setState, getState }: T): void {
+    if (getState().uid) {
+      dispatch(new ShowSnackbar(`You've been logged out`));
+    }
+
     setState({ uid: null });
-    dispatch([new SetPhase(AuthPhase.LoggedOut), new ClearDevices()]);
+
+    dispatch([
+      new SetPhase(AuthPhase.LoggedOut),
+      new ClearDevices(),
+    ]);
   }
 
   @Action(LoginUser)
@@ -58,6 +66,11 @@ export class UserState<T extends StateContext<UserStateModel>> {
     }
 
     setState(loginUser);
-    dispatch([new HideLogin(), new SetPhase(AuthPhase.LoggedIn), new ListDevices()]);
+    dispatch([
+      new HideLogin(),
+      new SetPhase(AuthPhase.LoggedIn),
+      new ListDevices(),
+      new ShowSnackbar({message: `Successfully logged in as ${loginUser.displayName}`})
+    ]);
   }
 }

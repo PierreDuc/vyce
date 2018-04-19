@@ -32,6 +32,10 @@ export abstract class DataCollectionService<T extends object> {
     return this.doc(id).get();
   }
 
+  delete(id: string): Promise<void> {
+    return this.doc(id).delete();
+  }
+
   getDoc$(id: string): Observable<DocumentSnapshot> {
     if (!this.streams$.has(id)) {
       this.streams$.set(

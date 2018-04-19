@@ -6,7 +6,7 @@
       For your convenience, I've have already selected the default devices from your system
     </div>
 
-    <div *ngFor="let source of sources" fxLayout="column" fxLayoutGap="16px">
+    <div *ngFor="let source of sources" fxLayout="column" fxLayoutGap="16px" fxFlex="none">
       <ng-container *ngIf="inputs[source.prop] as input">
         <div fxLayout fxLayoutAlign="start center" fxLayoutGap="8px" class="mat-h2">
           <button mat-mini-fab [class.disabled]="input.disabled" [disabled]="!input.devices.length" (click)="onSwitchClick(input)">

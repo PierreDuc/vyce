@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
 
 import { Store } from '@ngxs/store';
 
-import { AddDevice } from '../../../actions/devices.action';
+import { AddLocalDevice } from '../../../actions/devices.action';
 import { MediaDevicesService } from '../../../../core/services/media-devices.service';
 import { DeviceStateModel } from '../../../states/devices.state';
 import { DeviceType } from '../../../enums/device-type.enum';
@@ -57,7 +57,7 @@ export class AddDeviceDialogComponent {
     };
 
     if (device.audio || device.video) {
-      this.store.dispatch(new AddDevice(device));
+      this.store.dispatch(new AddLocalDevice(device));
     }
   }
 

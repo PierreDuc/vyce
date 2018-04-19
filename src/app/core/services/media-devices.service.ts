@@ -42,6 +42,10 @@ export class MediaDevicesService {
     return this.idu.set(deviceId, device, UserStore.Devices);
   }
 
+  public removeLocalDevice(deviceId: string): Promise<void> {
+    return this.idu.del(deviceId, UserStore.Devices);
+  }
+
   private updateDeviceList(): Promise<void> {
     return navigator.mediaDevices.enumerateDevices().then(devices => {
       const inputDevices = {

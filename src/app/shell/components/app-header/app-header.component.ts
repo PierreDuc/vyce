@@ -8,6 +8,8 @@ import { AuthStateService } from '../../../core/services/state/auth-state.servic
 import { UserState, UserStateModel } from '../../../shared/states/user.state';
 import { AuthState } from '../../../shared/states/auth.state';
 import { ShowLogin } from '../../../shared/actions/ui.action';
+import {LogoutUser} from "../../../shared/actions/user.action";
+import {FirebaseService} from "../../../core/module/firebase.service";
 
 @Component({
   selector: 'vc-app-header',
@@ -16,12 +18,15 @@ import { ShowLogin } from '../../../shared/actions/ui.action';
 })
 export class AppHeaderComponent {
   @Select(UserState) readonly user$!: Observable<UserStateModel | null>;
+  @Select(AuthState.loggedIn) readonly loggedIn$!: Observable<boolean>;
 
-  constructor(readonly as: AuthStateService, readonly store: Store) {}
+  constructor(private readonly as: AuthStateService, private readonly store: Store) {}
 
   onAvatarClick(): void {
-    this.store.selectOnce(AuthState.loggedIn).subscribe(loggedIn => {
-      loggedIn ? this.as.logoutUser() : this.store.dispatch(new ShowLogin());
-    });
+    if (this.store.selectSnapshot(AuthState.loggedIn)) {
+      this.as.logout();
+    } else {
+      this.store.dispatch(new ShowLogin());
+    }
   }
 }

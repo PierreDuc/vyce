@@ -1,8 +1,9 @@
 import { Action, State, StateContext } from '@ngxs/store';
 
 import { DevicesCollectionService } from '../../core/services/collection/devices-collection.service';
-import { AddDevice, ClearDevices, ListDevices } from '../actions/devices.action';
+import {AddLocalDevice, ClearDevices, ListDevices, RemoveLocalDevice} from '../actions/devices.action';
 import { MediaDevicesService } from '../../core/services/media-devices.service';
+import {ShowSnackbar} from "../actions/ui.action";
 
 export interface DeviceInputModel {
   deviceId: string;
@@ -35,17 +36,28 @@ export class DevicesState<T extends StateContext<DeviceStateModel[]>> {
     });
   }
 
-  @Action(AddDevice)
-  addDevice(ctx: T, { device: { audio, video, name } }: AddDevice): Promise<void> {
+  @Action(AddLocalDevice)
+  async addLocalDevice({dispatch}: T, { device: { audio, video, name } }: AddLocalDevice): Promise<void> {
     const device: DeviceStateModel = {
       name: name,
       audio: this.createInputDevice(audio),
       video: this.createInputDevice(video)
     };
 
-    return this.dc.add(device).then(doc => {
-      return this.md.storeLocalDevice(doc.id, device);
+    const doc = await this.dc.add(device);
+    await this.md.storeLocalDevice(doc.id, device);
+
+    dispatch(new ShowSnackbar({message: 'Local device added', action: 'undo'})).subscribe(() => {
+      dispatch(new RemoveLocalDevice(doc.id));
     });
+  }
+
+  @Action(RemoveLocalDevice)
+  removeLocalDevice({dispatch}: T, { deviceId }: RemoveLocalDevice): Promise<any> {
+    return Promise.all([
+      this.dc.delete(deviceId),
+      this.md.removeLocalDevice(deviceId)
+    ]);
   }
 
   private createInputDevice(device: DeviceInputModel | false): DeviceInputModel | false {

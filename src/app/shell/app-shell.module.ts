@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { MatToolbarModule } from '@angular/material';
+import {MatToolbarModule, MatTooltipModule} from '@angular/material';
 
 import { SharedModule } from '../shared/shared.module';
 
@@ -7,7 +7,7 @@ import { AppFooterComponent } from './components/app-footer/app-footer.component
 import { AppHeaderComponent } from './components/app-header/app-header.component';
 
 @NgModule({
-  imports: [MatToolbarModule, SharedModule],
+  imports: [MatToolbarModule, MatTooltipModule, SharedModule],
   declarations: [AppHeaderComponent, AppFooterComponent],
   exports: [AppHeaderComponent, AppFooterComponent]
 })
