@@ -1,31 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Store } from '@ngxs/store';
 
-import { DataCollectionService } from './data-collection.service';
+import { Injectable } from '@angular/core';
 
 import { DataPath } from '../../../shared/enums/data-path.enum';
 import { DeviceStateModel } from '../../../shared/states/devices.state';
+import { UserLinkedCollectionService } from './user-linked-collection.service';
 import { FirebaseService } from '../../module/firebase.service';
-import { Select, Store } from '@ngxs/store';
-import { UserState } from '../../../shared/states/user.state';
-import { Observable } from 'rxjs/index';
 
 @Injectable()
-export class DevicesCollectionService extends DataCollectionService<DeviceStateModel> {
+export class DevicesCollectionService extends UserLinkedCollectionService<DeviceStateModel> {
   protected readonly dataPath: DataPath = DataPath.Devices;
 
-  protected get subPath(): string | null {
-    const subPath: string = this.store.selectSnapshot<string>(state => state.user.uid);
-
-    if (!subPath) {
-      throw new Error('Unauthorized');
-    }
-
-    return `user/${subPath}`;
-  }
-
-  @Select(UserState.uid) private readonly uid$!: Observable<string | null>;
-
-  constructor(private readonly store: Store, fs: FirebaseService) {
-    super(fs);
+  constructor(store: Store, fs: FirebaseService) {
+    super(store, fs);
   }
 }

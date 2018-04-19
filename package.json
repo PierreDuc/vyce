@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port=4201",
+    "start": "ng serve --port=4201 --ssl --ssl-key ./ssl/server.key --ssl-cert ./ssl/server.crt -o",
     "build": "ng build --prod",
     "test": "ng test",
     "lint": "ng lint",
@@ -24,9 +24,11 @@
     "@angular/platform-browser": "6.0.0-rc.5",
     "@angular/platform-browser-dynamic": "6.0.0-rc.5",
     "@angular/router": "6.0.0-rc.5",
+    "@angular/service-worker": "5.2.10",
     "@ngxs/store": "3.0.0-rc.1",
     "core-js": "2.5.5",
     "firebase": "4.13.0-4",
+    "idb-keyval": "3.0.3",
     "rxjs": "6.0.0-uncanny-rc.7",
     "rxjs-compat": "6.0.0-uncanny-rc.7",
     "zone.js": "0.8.26"

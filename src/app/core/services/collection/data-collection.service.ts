@@ -55,9 +55,7 @@ export abstract class DataCollectionService<T extends object> {
 
   getDocs$(): Observable<T[]> {
     return new Observable(subscriber => {
-      this.collection().onSnapshot(snapshot => {
-        subscriber.next(snapshot.docs.map(doc => doc.data() as T));
-      });
+      this.collection().onSnapshot(snapshot => subscriber.next(snapshot.docs.map(doc => doc.data() as T)));
     });
   }
 

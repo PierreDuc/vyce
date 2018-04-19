@@ -1,4 +1,4 @@
-<ng-container *ngIf="inputs$ | async as input">
+<ng-container *ngIf="inputs$ | async as inputs">
   <header class="mat-display-1" matDialogTitle>Choose the video and audio input device</header>
 
   <div fxLayout="column" fxLayoutGap="32px" matDialogContent>
@@ -6,40 +6,34 @@
       For your convenience, I've have already selected the default devices from your system
     </div>
 
-    <div fxLayout="column" fxLayoutGap="16px">
-      <div fxLayout fxLayoutAlign="start center" fxLayoutGap="8px" class="mat-h2">
-        <button mat-mini-fab (click)="onSwitchClick(input.video)" [class.disabled]="input.video.disabled">
-          <mat-icon>{{input.video.disabled ? 'videocam_off' : 'videocam'}}</mat-icon>
-        </button>
-        <header>Video devices found</header>
-      </div>
+    <div *ngFor="let source of sources" fxLayout="column" fxLayoutGap="16px">
+      <ng-container *ngIf="inputs[source.prop] as input">
+        <div fxLayout fxLayoutAlign="start center" fxLayoutGap="8px" class="mat-h2">
+          <button mat-mini-fab [class.disabled]="input.disabled" [disabled]="!input.devices.length" (click)="onSwitchClick(input)">
+            <mat-icon>{{source.icon + (input.disabled ? '_off' : '')}}</mat-icon>
+          </button>
+          <header>
+            <ng-container *ngIf="!input.devices.length">no </ng-container>{{source.prop}} inputs found
+          </header>
+        </div>
 
-      <mat-radio-group fxLayout="column" fxLayoutGap="8px" [(ngModel)]="input.video.selected" [disabled]="input.video.disabled">
-        <mat-radio-button *ngFor="let device of input.video.devices" [value]="device">
-          {{device.label || device.deviceId}}
-        </mat-radio-button>
-      </mat-radio-group>
+        <mat-radio-group fxLayout="column" fxLayoutGap="8px" [(ngModel)]="input.selected" [disabled]="input.disabled">
+          <mat-radio-button *ngFor="let device of input.devices" [value]="device" [checked]="!input.disabled && device === input.selected">
+            {{device.label || device.deviceId}}
+          </mat-radio-button>
+        </mat-radio-group>
+      </ng-container>
     </div>
 
-    <div fxLayout="column" fxLayoutGap="16px">
-      <div fxLayout fxLayoutAlign="start center" fxLayoutGap="8px" class="mat-h2">
-        <button mat-mini-fab (click)="onSwitchClick(input.audio)" [class.disabled]="input.audio.disabled">
-          <mat-icon>{{input.audio.disabled ? 'mic_off' : 'mic'}}</mat-icon>
-        </button>
-        <header>Audio devices found</header>
-      </div>
-
-      <mat-radio-group fxLayout="column" fxLayoutGap="8px" [(ngModel)]="input.audio.selected" [disabled]="input.audio.disabled">
-        <mat-radio-button *ngFor="let device of input.audio.devices" [value]="device">
-          {{device.label || device.deviceId}}
-        </mat-radio-button>
-      </mat-radio-group>
-    </div>
+    <mat-form-field>
+      <input matInput cdkFocusInitial type="text" placeholder="Device name" required [(ngModel)]="deviceName">
+    </mat-form-field>
   </div>
 
   <div fxLayout fxLayoutGap="12px" fxLayoutAlign="start center" matDialogActions>
     <button mat-raised-button matDialogClose>Cancel</button>
-    <button mat-raised-button matDialogClose cdkFocusInitial color="accent"
-            [disabled]="!input.audio.selected && !input.video.selected" (click)="onAddDeviceClick(input)" >Add device</button>
+    <button mat-raised-button matDialogClose color="accent"
+            [disabled]="!inputs.audio.selected && !inputs.video.selected || inputs.audio.disabled && inputs.video.disabled || !deviceName"
+            (click)="onAddDeviceClick(inputs)" >Add device</button>
   </div>
 </ng-container>

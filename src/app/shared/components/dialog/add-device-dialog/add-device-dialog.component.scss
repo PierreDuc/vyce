@@ -1,3 +1,7 @@
+.mat-display-1 {
+  margin-bottom: 0;
+}
+
 .mat-subheading-1 {
   max-width: 400px;
 }
@@ -8,4 +12,10 @@ mat-radio-button {
 
 button.disabled {
   opacity: 0.5;
+}
+
+[matDialogContent] {
+  header::first-letter {
+    text-transform: uppercase;
+  }
 }

@@ -6,16 +6,18 @@ import { Store } from '@ngxs/store';
 
 import { InputKind } from '../../shared/enums/input-kind.enum';
 import { ShowAddDevice } from '../../shared/actions/ui.action';
+import { DeviceStateModel } from '../../shared/states/devices.state';
+import { IndexDbUserService } from './index-db-user.service';
+import { UserStore } from '../../shared/enums/user-store.enum';
 
 @Injectable()
 export class MediaDevicesService {
-  //@todo update to {video: MediaDeviceInfo[], audio: MediaDeviceInfo[]}
   public readonly devices$ = new BehaviorSubject<{ video: MediaDeviceInfo[]; audio: MediaDeviceInfo[] }>({
     video: [],
     audio: []
   });
 
-  constructor(private readonly store: Store) {
+  constructor(private readonly store: Store, private readonly idu: IndexDbUserService) {
     navigator.mediaDevices.addEventListener('devicechange', () => this.updateDeviceList());
 
     this.updateDeviceList();
@@ -32,15 +34,19 @@ export class MediaDevicesService {
       .then(stream => {
         stream.getTracks().forEach(track => track.stop());
 
-        this.store.dispatch(new ShowAddDevice());
+        this.updateDeviceList().then(() => this.store.dispatch(new ShowAddDevice()));
       });
   }
 
-  private updateDeviceList(): void {
-    navigator.mediaDevices.enumerateDevices().then(devices => {
+  public storeLocalDevice(deviceId: string, device: DeviceStateModel): Promise<void> {
+    return this.idu.set(deviceId, device, UserStore.Devices);
+  }
+
+  private updateDeviceList(): Promise<void> {
+    return navigator.mediaDevices.enumerateDevices().then(devices => {
       const inputDevices = {
-        audio: devices.filter(device => device.kind === InputKind.Audio),
-        video: devices.filter(device => device.kind === InputKind.Video)
+        audio: devices.filter(({ kind }) => kind === InputKind.Audio),
+        video: devices.filter(({ kind }) => kind === InputKind.Video)
       };
 
       this.devices$.next(inputDevices);

@@ -11,6 +11,7 @@ export interface DeviceInputModel {
 }
 
 export interface DeviceStateModel {
+  name: string;
   audio: DeviceInputModel | false;
   video: DeviceInputModel | false;
 }
@@ -20,7 +21,7 @@ export interface DeviceStateModel {
   defaults: []
 })
 export class DevicesState<T extends StateContext<DeviceStateModel[]>> {
-  constructor(private readonly dc: DevicesCollectionService) {}
+  constructor(private readonly dc: DevicesCollectionService, private readonly md: MediaDevicesService) {}
 
   @Action(ClearDevices)
   clearDevices({ setState }: T): void {
@@ -35,10 +36,15 @@ export class DevicesState<T extends StateContext<DeviceStateModel[]>> {
   }
 
   @Action(AddDevice)
-  addDevice(ctx: T, { device }: AddDevice): Promise<any> {
-    return this.dc.add({
-      audio: this.createInputDevice(device.audio),
-      video: this.createInputDevice(device.video)
+  addDevice(ctx: T, { device: { audio, video, name } }: AddDevice): Promise<void> {
+    const device: DeviceStateModel = {
+      name: name,
+      audio: this.createInputDevice(audio),
+      video: this.createInputDevice(video)
+    };
+
+    return this.dc.add(device).then(doc => {
+      return this.md.storeLocalDevice(doc.id, device);
     });
   }
 

@@ -6,7 +6,7 @@ import { UsersCollectionService } from '../../core/services/collection/users-col
 
 import { HideLogin } from '../actions/ui.action';
 import { SetPhase } from '../actions/auth.action';
-import { ListDevices } from '../actions/devices.action';
+import { ClearDevices, ListDevices } from '../actions/devices.action';
 import { LogoutUser, LoginUser } from '../actions/user.action';
 
 export interface UserStateModel {
@@ -35,7 +35,7 @@ export class UserState<T extends StateContext<UserStateModel>> {
   @Action(LogoutUser)
   logoutUser({ dispatch, setState }: T): void {
     setState({ uid: null });
-    dispatch(new SetPhase(AuthPhase.LoggedOut));
+    dispatch([new SetPhase(AuthPhase.LoggedOut), new ClearDevices()]);
   }
 
   @Action(LoginUser)

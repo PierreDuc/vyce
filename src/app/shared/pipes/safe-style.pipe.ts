@@ -1,13 +1,13 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 
 @Pipe({
   name: 'safeStyle'
 })
 export class SafeStylePipe implements PipeTransform {
-  constructor(readonly ss: DomSanitizer) {}
+  constructor(private readonly ss: DomSanitizer) {}
 
-  transform(style: string): any {
+  transform(style: string): SafeStyle {
     return this.ss.bypassSecurityTrustStyle(style);
   }
 }

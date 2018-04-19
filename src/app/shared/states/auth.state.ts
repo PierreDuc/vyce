@@ -40,11 +40,11 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
   }
 
   @Action(LoginWithProvider)
-  async loginWithProvider({ patchState, dispatch }: T, { provider }: LoginWithProvider): Promise<void> {
+  loginWithProvider({ patchState, dispatch }: T, { provider }: LoginWithProvider): Promise<void> {
     patchState({ provider });
     dispatch(new SetPhase(AuthPhase.Authenticating));
 
-    await this.fs.auth().signInWithPopup(new this.authProviders[provider]());
+    return this.fs.auth().signInWithPopup(new this.authProviders[provider]());
   }
 
   @Action(SetPhase)

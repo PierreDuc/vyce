@@ -3,10 +3,12 @@ import { mergeMap, map } from 'rxjs/operators';
 
 import { Component } from '@angular/core';
 
-import { Select } from '@ngxs/store';
+import { Select, Store } from '@ngxs/store';
 
 import { MediaDevicesService } from '../../../../core/services/media-devices.service';
 import { DevicesState, DeviceStateModel } from '../../../../shared/states/devices.state';
+import { AuthState } from '../../../../shared/states/auth.state';
+import { ShowLogin } from '../../../../shared/actions/ui.action';
 
 @Component({
   selector: 'vc-stream-list',
@@ -18,7 +20,7 @@ export class StreamListComponent {
 
   readonly canAddCurrent$: Observable<boolean>;
 
-  constructor(private readonly md: MediaDevicesService) {
+  constructor(private readonly md: MediaDevicesService, private readonly store: Store) {
     this.canAddCurrent$ = this.devices$.pipe(
       mergeMap(added =>
         this.md.devices$.pipe(
@@ -36,6 +38,10 @@ export class StreamListComponent {
   }
 
   onAddCurrentClick(): void {
-    this.md.addLocalAvailable();
+    if (this.store.selectSnapshot(AuthState.loggedIn)) {
+      this.md.addLocalAvailable();
+    } else {
+      this.store.dispatch(new ShowLogin());
+    }
   }
 }

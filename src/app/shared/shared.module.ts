@@ -1,7 +1,14 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FlexLayoutModule } from '@angular/flex-layout';
-import { MatButtonModule, MatDialogModule, MatIconModule, MatRadioModule } from '@angular/material';
+import {
+  MatButtonModule,
+  MatDialogModule,
+  MatFormFieldModule,
+  MatIconModule,
+  MatInputModule,
+  MatRadioModule
+} from '@angular/material';
 
 import { LogoComponent } from './components/logo/logo.component';
 import { SafeStylePipe } from './pipes/safe-style.pipe';
@@ -17,8 +24,10 @@ import { FormsModule } from '@angular/forms';
     MatIconModule,
     MatButtonModule,
     MatRadioModule,
-    FormsModule,
-    MatDialogModule
+    MatDialogModule,
+    MatInputModule,
+    MatFormFieldModule,
+    FormsModule
   ],
   declarations: [SafeStylePipe, AvatarComponent, LogoComponent, LoginDialogComponent, AddDeviceDialogComponent],
   exports: [CommonModule, FlexLayoutModule, SafeStylePipe, AvatarComponent, LogoComponent],

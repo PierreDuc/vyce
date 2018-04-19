@@ -19,6 +19,7 @@ import { AuthStateService } from './services/state/auth-state.service';
 import { MediaDevicesService } from './services/media-devices.service';
 import { UsersCollectionService } from './services/collection/users-collection.service';
 import { DevicesCollectionService } from './services/collection/devices-collection.service';
+import { IndexDbUserService } from './services/index-db-user.service';
 
 @NgModule({
   imports: [
@@ -29,6 +30,13 @@ import { DevicesCollectionService } from './services/collection/devices-collecti
     BrowserAnimationsModule
   ],
   exports: [NgxsModule],
-  providers: [UiStateService, AuthStateService, UsersCollectionService, DevicesCollectionService, MediaDevicesService]
+  providers: [
+    UiStateService,
+    AuthStateService,
+    UsersCollectionService,
+    DevicesCollectionService,
+    MediaDevicesService,
+    IndexDbUserService
+  ]
 })
 export class CoreModule {}

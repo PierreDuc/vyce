@@ -8,7 +8,6 @@ import { Store } from '@ngxs/store';
 import { AddDevice } from '../../../actions/devices.action';
 import { MediaDevicesService } from '../../../../core/services/media-devices.service';
 import { DeviceStateModel } from '../../../states/devices.state';
-import { InputKind } from '../../../enums/input-kind.enum';
 import { DeviceType } from '../../../enums/device-type.enum';
 
 interface MediaInputType {
@@ -29,6 +28,13 @@ interface MediaInputs {
 export class AddDeviceDialogComponent {
   readonly inputs$: Observable<MediaInputs>;
 
+  readonly sources: { prop: keyof MediaInputs; icon: string }[] = [
+    { prop: 'audio', icon: 'mic' },
+    { prop: 'video', icon: 'videocam' }
+  ];
+
+  deviceName = '';
+
   constructor(private readonly store: Store, private readonly md: MediaDevicesService) {
     this.inputs$ = this.md.devices$.pipe(
       map(({ audio, video }) => ({
@@ -40,11 +46,12 @@ export class AddDeviceDialogComponent {
 
   onSwitchClick(input: MediaInputType): void {
     input.disabled = !input.disabled;
-    input.selected = undefined;
+    // input.selected = undefined;
   }
 
   onAddDeviceClick({ audio, video }: MediaInputs): void {
     const device: DeviceStateModel = {
+      name: this.deviceName,
       audio: (!audio.disabled && audio.selected) || false,
       video: (!video.disabled && video.selected) || false
     };
