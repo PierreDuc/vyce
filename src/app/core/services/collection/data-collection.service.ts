@@ -10,11 +10,9 @@ export abstract class DataCollectionService<T extends object> {
 
   protected streams$ = new Map<string, Observable<DocumentSnapshot>>();
 
-  protected constructor(protected readonly fs: FirebaseService) {}
+  protected subPath: string | undefined;
 
-  protected get subPath(): string | null {
-    return null;
-  }
+  protected constructor(protected readonly fs: FirebaseService) {}
 
   set(data: T, id: string): Promise<void> {
     return this.doc(id).set(data);
@@ -67,21 +65,15 @@ export abstract class DataCollectionService<T extends object> {
     return this.collection().doc().id;
   }
 
-  private doc(path: string): DocumentReference {
-    if (this.subPath) {
-      path += `${this.subPath}/`;
-    }
-
-    return this.fs.firestore().doc(`/${this.dataPath}/${path}`);
+  protected getPath(id: string = ''): string {
+    return '/' + [this.dataPath, this.subPath, id].filter(p => p).join('/');
   }
 
-  private collection(): CollectionReference {
-    let path: string = this.dataPath;
+  protected doc(id: string): DocumentReference {
+    return this.fs.firestore().doc(this.getPath(id));
+  }
 
-    if (this.subPath) {
-      path += `/${this.subPath}`;
-    }
-
-    return this.fs.firestore().collection(`/${path}/`);
+  protected collection(): CollectionReference {
+    return this.fs.firestore().collection(this.getPath());
   }
 }

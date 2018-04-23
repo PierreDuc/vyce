@@ -1,8 +1,8 @@
 import { Injectable, Type } from '@angular/core';
-import {MatDialog, MatDialogRef, MatSnackBar, MatSnackBarConfig} from '@angular/material';
+import { MatDialog, MatDialogRef, MatSnackBar, MatSnackBarConfig } from '@angular/material';
 
-import {UiSnackbarConfig} from "../../interface/ui-snackbar-config.interface";
-import {Observable} from "rxjs/index";
+import { UiSnackbarConfig } from '../../interface/ui-snackbar-config.interface';
+import { Observable } from 'rxjs/index';
 
 @Injectable()
 export class UiStateService {
@@ -16,13 +16,13 @@ export class UiStateService {
     return this.md.open(dialog);
   }
 
-  public showSnackbar({message, action, config}: UiSnackbarConfig): Observable<void> {
+  public showSnackbar({ message, action, config }: UiSnackbarConfig): Observable<void> {
     config = config || {};
 
     if (action && !config.duration) {
       config.duration = 5000;
     }
 
-    return this.sb.open(message, action, {...this.snackbarConfig, ...config}).onAction();
+    return this.sb.open(message, action, { ...this.snackbarConfig, ...config }).onAction();
   }
 }

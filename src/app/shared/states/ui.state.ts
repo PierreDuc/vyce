@@ -3,12 +3,12 @@ import { MatDialogRef } from '@angular/material';
 
 import { Action, State, StateContext } from '@ngxs/store';
 
-import {HideAddDevice, HideLogin, ShowAddDevice, ShowLogin, ShowSnackbar} from '../actions/ui.action';
+import { HideAddDevice, HideLogin, ShowAddDevice, ShowLogin, ShowSnackbar } from '../actions/ui.action';
 import { UiStateService } from '../../core/services/state/ui-state.service';
 import { LoginDialogComponent } from '../components/dialog/login-dialog/login-dialog.component';
 import { AddDeviceDialogComponent } from '../components/dialog/add-device-dialog/add-device-dialog.component';
-import {Observable} from "rxjs/index";
-import {UiSnackbarConfig} from "../../core/interface/ui-snackbar-config.interface";
+import { Observable } from 'rxjs/index';
+import { UiSnackbarConfig } from '../../core/interface/ui-snackbar-config.interface';
 
 export interface UiStateModel {
   dialogs: {
@@ -55,7 +55,7 @@ export class UiState<T extends StateContext<UiStateModel>> {
   }
 
   @Action(ShowSnackbar)
-  showSnackbar(ctx: T, {config}: ShowSnackbar): Observable<void> {
+  showSnackbar(ctx: T, { config }: ShowSnackbar): Observable<void> {
     return this.us.showSnackbar(config as UiSnackbarConfig);
   }
 

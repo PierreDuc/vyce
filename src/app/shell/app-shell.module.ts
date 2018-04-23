@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import {MatToolbarModule, MatTooltipModule} from '@angular/material';
+import { MatToolbarModule, MatTooltipModule } from '@angular/material';
 
 import { SharedModule } from '../shared/shared.module';
 

@@ -1,9 +1,9 @@
-import { DeviceStateModel } from '../states/devices.state';
+import { LocalDeviceModel } from '../states/devices.state';
 
 export class AddLocalDevice {
   static readonly type = '[DEVICES] Add device';
 
-  constructor(readonly device: DeviceStateModel) {}
+  constructor(readonly device: LocalDeviceModel) {}
 }
 
 export class RemoveLocalDevice {

@@ -6,7 +6,7 @@ import { Store } from '@ngxs/store';
 
 import { InputKind } from '../../shared/enums/input-kind.enum';
 import { ShowAddDevice } from '../../shared/actions/ui.action';
-import { DeviceStateModel } from '../../shared/states/devices.state';
+import { LocalDeviceModel } from '../../shared/states/devices.state';
 import { IndexDbUserService } from './index-db-user.service';
 import { UserStore } from '../../shared/enums/user-store.enum';
 
@@ -38,8 +38,21 @@ export class MediaDevicesService {
       });
   }
 
-  public storeLocalDevice(deviceId: string, device: DeviceStateModel): Promise<void> {
-    return this.idu.set(deviceId, device, UserStore.Devices);
+  public getLocalDevices(): Promise<string[]> {
+    return this.idu.keys(UserStore.Devices);
+  }
+
+  public storeLocalDevice(deviceId: string, device: LocalDeviceModel): Promise<void> {
+    const localDeviceIds: string[] = [];
+
+    if (device.audio) {
+      localDeviceIds.push(device.audio.deviceId);
+    }
+    if (device.video) {
+      localDeviceIds.push(device.video.deviceId);
+    }
+
+    return this.idu.set(deviceId, localDeviceIds, UserStore.Devices);
   }
 
   public removeLocalDevice(deviceId: string): Promise<void> {

@@ -1,7 +1,7 @@
 import { environment } from '../../environments/environment';
 
 import { NgModule } from '@angular/core';
-import {MatDialogModule, MatSnackBarModule} from '@angular/material';
+import { MatDialogModule, MatSnackBarModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { NgxsModule } from '@ngxs/store';

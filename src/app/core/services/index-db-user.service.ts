@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 
 import { Store } from '@ngxs/store';
 
-import {del, get, set, Store as IdbStore} from 'idb-keyval';
+import { del, get, keys, set, Store as IdbStore } from 'idb-keyval';
 
 import { UserStore } from '../../shared/enums/user-store.enum';
 
@@ -42,6 +42,18 @@ export class IndexDbUserService {
     }
 
     return del(uid + key, this.getStore(store));
+  }
+
+  async keys(store: UserStore): Promise<string[]> {
+    const uid: string | null = this.uid();
+
+    if (!uid) {
+      return Promise.resolve([]);
+    }
+
+    const ids = await keys(this.getStore(store));
+
+    return (ids.filter(id => typeof id === 'string') as string[]).map(id => id.replace(uid, ''));
   }
 
   private uid(): string | null {

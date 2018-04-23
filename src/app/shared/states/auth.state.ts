@@ -44,7 +44,10 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
     patchState({ provider });
     dispatch(new SetPhase(AuthPhase.Authenticating));
 
-    return this.fs.auth().signInWithPopup(new this.authProviders[provider]());
+    return this.fs
+      .auth()
+      .signInWithPopup(new this.authProviders[provider]())
+      .catch(() => dispatch(new SetPhase(AuthPhase.LoggedOut)));
   }
 
   @Action(SetPhase)

@@ -4,7 +4,7 @@ import { AuthPhase } from '../enums/auth-phase.enum';
 
 import { UsersCollectionService } from '../../core/services/collection/users-collection.service';
 
-import {HideLogin, ShowSnackbar} from '../actions/ui.action';
+import { HideLogin, ShowSnackbar } from '../actions/ui.action';
 import { SetPhase } from '../actions/auth.action';
 import { ClearDevices, ListDevices } from '../actions/devices.action';
 import { LogoutUser, LoginUser } from '../actions/user.action';
@@ -40,10 +40,7 @@ export class UserState<T extends StateContext<UserStateModel>> {
 
     setState({ uid: null });
 
-    dispatch([
-      new SetPhase(AuthPhase.LoggedOut),
-      new ClearDevices(),
-    ]);
+    dispatch([new SetPhase(AuthPhase.LoggedOut), new ClearDevices()]);
   }
 
   @Action(LoginUser)
@@ -70,7 +67,7 @@ export class UserState<T extends StateContext<UserStateModel>> {
       new HideLogin(),
       new SetPhase(AuthPhase.LoggedIn),
       new ListDevices(),
-      new ShowSnackbar({message: `Successfully logged in as ${loginUser.displayName}`})
+      new ShowSnackbar({ message: `Successfully logged in as ${loginUser.displayName}` })
     ]);
   }
 }

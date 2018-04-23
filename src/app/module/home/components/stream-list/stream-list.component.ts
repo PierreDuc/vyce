@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 
 import { MediaDevicesService } from '../../../../core/services/media-devices.service';
-import { DevicesState, DeviceStateModel } from '../../../../shared/states/devices.state';
+import { DevicesState, DeviceStateModel, LocalDeviceModel } from '../../../../shared/states/devices.state';
 import { AuthState } from '../../../../shared/states/auth.state';
 import { ShowLogin } from '../../../../shared/actions/ui.action';
 
@@ -16,7 +16,7 @@ import { ShowLogin } from '../../../../shared/actions/ui.action';
   styleUrls: ['./stream-list.component.scss']
 })
 export class StreamListComponent {
-  @Select(DevicesState) readonly devices$!: Observable<DeviceStateModel[]>;
+  @Select(DevicesState.devices) readonly devices$!: Observable<LocalDeviceModel[]>;
 
   readonly canAddCurrent$: Observable<boolean>;
 

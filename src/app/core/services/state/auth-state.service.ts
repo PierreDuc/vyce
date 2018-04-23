@@ -12,7 +12,8 @@ import { FirebaseService } from '../../module/firebase.service';
 
 import { LoginProvider } from '../../../shared/enums/login-provider.enum';
 import { LoginUser, LogoutUser } from '../../../shared/actions/user.action';
-import {LoginWithProvider, SetPersistence} from '../../../shared/actions/auth.action';
+import { LoginWithProvider, SetPersistence } from '../../../shared/actions/auth.action';
+import { HideLogin } from '../../../shared/actions/ui.action';
 
 @Injectable()
 export class AuthStateService {
@@ -24,8 +25,8 @@ export class AuthStateService {
     return this.fs.auth().signOut();
   }
 
-  public loginWithProvider(provider: LoginProvider): Observable<any> {
-    return this.store.dispatch(new LoginWithProvider(provider));
+  public loginWithProvider(provider: LoginProvider): void {
+    this.store.dispatch(new LoginWithProvider(provider)).subscribe(() => this.store.dispatch(new HideLogin()));
   }
 
   public initAuth(): Promise<void> {
