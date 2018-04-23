@@ -1,14 +1,15 @@
 import { Observable } from 'rxjs/index';
 import { map } from 'rxjs/operators';
 
-import { Component } from '@angular/core';
+import {Component, Input} from '@angular/core';
 
-import { Store } from '@ngxs/store';
+import {Select, Store} from '@ngxs/store';
 
-import { AddLocalDevice } from '../../../actions/devices.action';
+import {AddLocalDevice, CheckLocalDevice} from '../../../actions/devices.action';
 import { MediaDevicesService } from '../../../../core/services/media-devices.service';
-import { DeviceStateModel } from '../../../states/devices.state';
+import {DevicesState, LocalDeviceModel} from '../../../states/devices.state';
 import { DeviceType } from '../../../enums/device-type.enum';
+import {LocalDeviceState} from "../../../enums/local-device-state.enum";
 
 interface MediaInputType {
   disabled?: boolean;
@@ -33,6 +34,14 @@ export class AddDeviceDialogComponent {
     { prop: 'video', icon: 'videocam' }
   ];
 
+  readonly states = LocalDeviceState;
+
+  @Input('input')
+  deviceId?: string;
+
+  @Select(DevicesState.localDeviceState)
+  localDeviceState$!: LocalDeviceState;
+
   deviceName = '';
 
   constructor(private readonly store: Store, private readonly md: MediaDevicesService) {
@@ -44,13 +53,15 @@ export class AddDeviceDialogComponent {
     );
   }
 
-  onSwitchClick(input: MediaInputType): void {
-    input.disabled = !input.disabled;
-    // input.selected = undefined;
+  ngOnInit(): void {
+    if (this.deviceId) {
+    }
   }
 
-  onAddDeviceClick({ audio, video }: MediaInputs): void {
-    const device: DeviceStateModel = {
+  async onAddDeviceClick({ audio, video }: MediaInputs, state: LocalDeviceState): Promise<void> {
+    await this.removeLocalDevice(state);
+
+    const device: LocalDeviceModel = {
       name: this.deviceName,
       audio: (!audio.disabled && audio.selected) || false,
       video: (!video.disabled && video.selected) || false
@@ -58,6 +69,16 @@ export class AddDeviceDialogComponent {
 
     if (device.audio || device.video) {
       this.store.dispatch(new AddLocalDevice(device));
+    }
+  }
+
+  onDeleteClick(state: LocalDeviceState): void {
+    this.removeLocalDevice(state).then(() => this.store.dispatch(new CheckLocalDevice()));
+  }
+
+  private async removeLocalDevice(state: LocalDeviceState): Promise<void> {
+    if (state === LocalDeviceState.LocalNotSaved && this.deviceId) {
+      this.md.removeLocalDevice(this.deviceId).then(() => this.store.dispatch(new CheckLocalDevice()));
     }
   }
 

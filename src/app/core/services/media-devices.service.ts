@@ -9,6 +9,7 @@ import { ShowAddDevice } from '../../shared/actions/ui.action';
 import { LocalDeviceModel } from '../../shared/states/devices.state';
 import { IndexDbUserService } from './index-db-user.service';
 import { UserStore } from '../../shared/enums/user-store.enum';
+import {CheckLocalDevice} from "../../shared/actions/devices.action";
 
 @Injectable()
 export class MediaDevicesService {
@@ -42,6 +43,10 @@ export class MediaDevicesService {
     return this.idu.keys(UserStore.Devices);
   }
 
+  public getLocalDevice(deviceId: string): Promise<string[] | null> {
+    return this.idu.get<string[]>(deviceId, UserStore.Devices);
+  }
+
   public storeLocalDevice(deviceId: string, device: LocalDeviceModel): Promise<void> {
     const localDeviceIds: string[] = [];
 
@@ -67,6 +72,7 @@ export class MediaDevicesService {
       };
 
       this.devices$.next(inputDevices);
+      this.store.dispatch(new CheckLocalDevice());
     });
   }
 }

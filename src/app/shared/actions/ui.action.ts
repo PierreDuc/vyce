@@ -1,6 +1,10 @@
 import { UiSnackbarConfig } from '../../core/interface/ui-snackbar-config.interface';
 
-export class ShowLogin {
+abstract class ShowDialog {
+  constructor(readonly input?: any) {}
+}
+
+export class ShowLogin extends ShowDialog {
   static readonly type = '[UI] Show login popup';
 }
 
@@ -8,7 +12,7 @@ export class HideLogin {
   static readonly type = '[UI] Hide login popup';
 }
 
-export class ShowAddDevice {
+export class ShowAddDevice extends ShowDialog {
   static readonly type = '[UI] Show add device popup';
 }
 

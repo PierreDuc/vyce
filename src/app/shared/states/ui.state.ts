@@ -45,8 +45,8 @@ export class UiState<T extends StateContext<UiStateModel>> {
   }
 
   @Action(ShowAddDevice)
-  showAddDevice(ctx: T): void {
-    this.showDialog(ctx, 'addDevice');
+  showAddDevice(ctx: T, { input }: ShowAddDevice): void {
+    this.showDialog(ctx, 'addDevice', input);
   }
 
   @Action(HideAddDevice)
@@ -59,12 +59,12 @@ export class UiState<T extends StateContext<UiStateModel>> {
     return this.us.showSnackbar(config as UiSnackbarConfig);
   }
 
-  private showDialog(ctx: T, dialog: keyof UiStateModel['dialogs']): void {
+  private showDialog(ctx: T, dialog: keyof UiStateModel['dialogs'], input?: any): void {
     const { getState } = ctx;
     const dialogType = this.dialogs.get(dialog);
 
     if (!getState().dialogs[dialog] && dialogType) {
-      dialogType.ref = this.us.showDialog(dialogType.dialog);
+      dialogType.ref = this.us.showDialog(dialogType.dialog, input);
 
       dialogType.ref.afterClosed().subscribe(() => {
         this.patchDialogState(ctx, dialog, false);

@@ -12,8 +12,8 @@ export class UiStateService {
 
   constructor(private readonly md: MatDialog, private readonly sb: MatSnackBar) {}
 
-  public showDialog<T>(dialog: Type<T>): MatDialogRef<T> {
-    return this.md.open(dialog);
+  public showDialog<T>(dialog: Type<T>, input?: any): MatDialogRef<T> {
+    return this.md.open(dialog, {data: {input}});
   }
 
   public showSnackbar({ message, action, config }: UiSnackbarConfig): Observable<void> {

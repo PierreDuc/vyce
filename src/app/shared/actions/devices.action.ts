@@ -19,3 +19,7 @@ export class ListDevices {
 export class ClearDevices {
   static readonly type = '[DEVICES] Clear devices from user';
 }
+
+export class CheckLocalDevice {
+  static readonly type = '[DEVICES] Check local device with user device';
+}
