@@ -1,7 +1,6 @@
 export enum LocalDeviceState {
-  NotAdded = 1,
+  NotLinked = 1,
   LocalNotFound,
   LocalNotSaved,
-  Searching,
   Linked
 }

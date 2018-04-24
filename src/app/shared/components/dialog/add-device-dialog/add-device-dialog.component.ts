@@ -1,15 +1,17 @@
 import { Observable } from 'rxjs/index';
 import { map } from 'rxjs/operators';
 
-import {Component, Input} from '@angular/core';
+import { Component, Inject } from '@angular/core';
+import { DocumentSnapshot } from '@firebase/firestore-types';
 
-import {Select, Store} from '@ngxs/store';
+import { Select, Store } from '@ngxs/store';
 
-import {AddLocalDevice, CheckLocalDevice} from '../../../actions/devices.action';
+import { AddLocalDevice, CheckLocalDevice, RemoveLocalDevice } from '../../../actions/devices.action';
 import { MediaDevicesService } from '../../../../core/services/media-devices.service';
-import {DevicesState, LocalDeviceModel} from '../../../states/devices.state';
+import { DevicesState, LocalDeviceModel } from '../../../states/devices.state';
 import { DeviceType } from '../../../enums/device-type.enum';
-import {LocalDeviceState} from "../../../enums/local-device-state.enum";
+import { LocalDeviceState } from '../../../enums/local-device-state.enum';
+import { MAT_DIALOG_DATA } from '@angular/material';
 
 interface MediaInputType {
   disabled?: boolean;
@@ -36,25 +38,24 @@ export class AddDeviceDialogComponent {
 
   readonly states = LocalDeviceState;
 
-  @Input('input')
-  deviceId?: string;
-
-  @Select(DevicesState.localDeviceState)
-  localDeviceState$!: LocalDeviceState;
+  @Select(DevicesState.localDeviceState) localDeviceState$!: LocalDeviceState;
 
   deviceName = '';
 
-  constructor(private readonly store: Store, private readonly md: MediaDevicesService) {
+  constructor(
+    private readonly store: Store,
+    private readonly md: MediaDevicesService,
+    @Inject(MAT_DIALOG_DATA) private readonly data: { device?: DocumentSnapshot; deviceId?: string } = {}
+  ) {
     this.inputs$ = this.md.devices$.pipe(
       map(({ audio, video }) => ({
         audio: this.filterDevices(audio),
         video: this.filterDevices(video)
       }))
     );
-  }
 
-  ngOnInit(): void {
-    if (this.deviceId) {
+    if (this.data.device) {
+      this.deviceName = this.data.device.get('name');
     }
   }
 
@@ -73,13 +74,29 @@ export class AddDeviceDialogComponent {
   }
 
   onDeleteClick(state: LocalDeviceState): void {
-    this.removeLocalDevice(state).then(() => this.store.dispatch(new CheckLocalDevice()));
+    const deviceId = this.getDeviceId();
+
+    console.log(deviceId);
+
+    if (deviceId) {
+      this.store.dispatch(new RemoveLocalDevice(deviceId)).subscribe(() => {
+        if (state === LocalDeviceState.LocalNotSaved) {
+          this.store.dispatch(new CheckLocalDevice());
+        }
+      });
+    }
   }
 
   private async removeLocalDevice(state: LocalDeviceState): Promise<void> {
-    if (state === LocalDeviceState.LocalNotSaved && this.deviceId) {
-      this.md.removeLocalDevice(this.deviceId).then(() => this.store.dispatch(new CheckLocalDevice()));
+    const deviceId = this.getDeviceId();
+
+    if (state !== LocalDeviceState.NotLinked && deviceId) {
+      return this.md.removeLocalDevice(deviceId);
     }
+  }
+
+  private getDeviceId(): string | undefined {
+    return this.data.deviceId || (this.data.device && this.data.device.id);
   }
 
   private filterDevices(devices: MediaDeviceInfo[]): MediaInputType {

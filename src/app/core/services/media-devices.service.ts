@@ -9,7 +9,7 @@ import { ShowAddDevice } from '../../shared/actions/ui.action';
 import { LocalDeviceModel } from '../../shared/states/devices.state';
 import { IndexDbUserService } from './index-db-user.service';
 import { UserStore } from '../../shared/enums/user-store.enum';
-import {CheckLocalDevice} from "../../shared/actions/devices.action";
+import { CheckLocalDevice } from '../../shared/actions/devices.action';
 
 @Injectable()
 export class MediaDevicesService {

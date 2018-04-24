@@ -1,12 +1,16 @@
-import { Action, Actions, ofActionDispatched, Selector, State, StateContext } from '@ngxs/store';
+import { Action, Selector, State, StateContext } from '@ngxs/store';
 
 import { DevicesCollectionService } from '../../core/services/collection/devices-collection.service';
-import {AddLocalDevice, CheckLocalDevice, ClearDevices, ListDevices, RemoveLocalDevice} from '../actions/devices.action';
+import {
+  AddLocalDevice,
+  CheckLocalDevice,
+  ClearDevices,
+  ListDevices,
+  RemoveLocalDevice
+} from '../actions/devices.action';
 import { MediaDevicesService } from '../../core/services/media-devices.service';
-import {ShowAddDevice, ShowSnackbar} from '../actions/ui.action';
+import { ShowAddDevice, ShowSnackbar } from '../actions/ui.action';
 import { LocalDeviceState } from '../enums/local-device-state.enum';
-import * as firebase from "firebase";
-import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
 
 export interface DeviceInputModel {
   deviceId: string;
@@ -31,7 +35,7 @@ export interface DeviceStateModel {
   defaults: {
     devices: [],
     localDevices: [],
-    localDeviceState: LocalDeviceState.NotAdded
+    localDeviceState: LocalDeviceState.NotLinked
   }
 })
 export class DevicesState<T extends StateContext<DeviceStateModel>> {
@@ -54,8 +58,11 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
     const missingDoc = docs.findIndex(doc => !doc.exists);
 
     if (missingDoc > -1) {
-      patchState({localDeviceState: LocalDeviceState.LocalNotSaved});
-      dispatch(new ShowAddDevice(localDevices[missingDoc]));
+      if (getState().localDeviceState !== LocalDeviceState.LocalNotSaved) {
+        patchState({ localDeviceState: LocalDeviceState.LocalNotSaved });
+        dispatch(new ShowAddDevice({ deviceId: localDevices[missingDoc] }));
+      }
+
       return;
     }
 
@@ -66,23 +73,32 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
     const missingDevice = docs.findIndex((doc, index) => {
       const device = doc.data() as LocalDeviceModel;
 
-      if (device.audio && localDeviceIds[index].includes(device.audio.deviceId)) {
+      if (device.audio && !localDeviceIds[index].includes(device.audio.deviceId)) {
         return false;
       }
 
-      return !(device.video && localDeviceIds[index].includes(device.video.deviceId));
+      return !device.video || localDeviceIds[index].includes(device.video.deviceId);
     });
 
     if (missingDevice > -1) {
-      patchState({localDeviceState: LocalDeviceState.LocalNotFound});
-      dispatch(new ShowAddDevice(docs[missingDevice]));
+      if (getState().localDeviceState !== LocalDeviceState.LocalNotFound) {
+        patchState({ localDeviceState: LocalDeviceState.LocalNotFound });
+        dispatch(new ShowAddDevice({ device: docs[missingDevice] }));
+      }
+
       return;
+    }
+
+    if (docs.length > 0) {
+      patchState({ localDeviceState: LocalDeviceState.Linked });
+    } else {
+      patchState({ localDeviceState: LocalDeviceState.NotLinked });
     }
   }
 
   @Action(ClearDevices)
   clearDevices({ patchState }: T): void {
-    patchState({ devices: [], localDevices: [], localDeviceState: LocalDeviceState.NotAdded });
+    patchState({ devices: [], localDevices: [], localDeviceState: LocalDeviceState.NotLinked });
   }
 
   @Action(ListDevices)
@@ -110,8 +126,9 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
   }
 
   @Action(RemoveLocalDevice)
-  removeLocalDevice({ dispatch }: T, { deviceId }: RemoveLocalDevice): Promise<any> {
-    return Promise.all([this.dc.delete(deviceId), this.md.removeLocalDevice(deviceId)]);
+  removeLocalDevice({ dispatch }: T, { deviceId }: RemoveLocalDevice): Promise<void> {
+    console.log('RemoveLocalDevice', deviceId);
+    return this.md.removeLocalDevice(deviceId).then(() => this.dc.delete(deviceId));
   }
 
   private createInputDevice(device: DeviceInputModel | false): DeviceInputModel | false {

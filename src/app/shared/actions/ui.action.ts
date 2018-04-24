@@ -1,11 +1,17 @@
+import { DocumentSnapshot } from '@firebase/firestore-types';
+
 import { UiSnackbarConfig } from '../../core/interface/ui-snackbar-config.interface';
 
 abstract class ShowDialog {
-  constructor(readonly input?: any) {}
+  protected constructor(readonly data?: object) {}
 }
 
 export class ShowLogin extends ShowDialog {
   static readonly type = '[UI] Show login popup';
+
+  constructor() {
+    super();
+  }
 }
 
 export class HideLogin {
@@ -14,6 +20,10 @@ export class HideLogin {
 
 export class ShowAddDevice extends ShowDialog {
   static readonly type = '[UI] Show add device popup';
+
+  constructor(readonly data: { device?: DocumentSnapshot; deviceId?: string } = {}) {
+    super(data);
+  }
 }
 
 export class HideAddDevice {

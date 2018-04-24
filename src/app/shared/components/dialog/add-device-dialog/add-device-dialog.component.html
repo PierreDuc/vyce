@@ -3,10 +3,14 @@
     <header class="mat-display-1" matDialogTitle>Choose the video and audio input device</header>
 
     <div fxLayout="column" fxLayoutGap="32px" matDialogContent>
-      <div *ngIf="state === states.NotAdded" class="mat-subheading-1">I've detected the input devices on your system. Please select your desired device(s). You can also disable either the audio or video stream.<br>
+      <div *ngIf="state === states.NotLinked" class="mat-subheading-1">I've detected the input devices on your system. Please select your desired device(s). You can also disable either the audio or video stream.<br>
         I've have already selected the default devices from your system
       </div>
+
       <div *ngIf="state === states.LocalNotSaved" class="mat-subheading-1">I've detected a stored device on this system, but I cannot link it with any known saved device. Please choose the correct input devices to link this device to your account, or delete the locally stored device
+      </div>
+
+      <div *ngIf="state === states.LocalNotFound" class="mat-subheading-1">I've detected a linked device on this system, but I can no longer find the linked input devices. Please connect the appropriate devices, link other input devices, or delete this linked device.
       </div>
 
       <div *ngFor="let source of sources" fxLayout="column" fxLayoutGap="16px" fxFlex="none">
@@ -34,8 +38,8 @@
     </div>
 
     <div fxLayout fxLayoutGap="12px" fxLayoutAlign="start center" matDialogActions>
-      <button *ngIf="state === states.NotAdded" mat-raised-button matDialogClose>Cancel</button>
-      <button *ngIf="state === states.LocalNotSaved" color="warn" mat-raised-button matDialogClose
+      <button *ngIf="state === states.NotLinked" mat-raised-button matDialogClose>Cancel</button>
+      <button *ngIf="state !== states.NotLinked" color="warn" mat-raised-button matDialogClose
               (click)="onDeleteClick(state)">Delete</button>
       <button mat-raised-button matDialogClose color="accent"
               [disabled]="!inputs.audio.selected && !inputs.video.selected || inputs.audio.disabled && inputs.video.disabled || !deviceName"
