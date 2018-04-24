@@ -5,7 +5,7 @@ import { Action, Selector, State, StateContext } from '@ngxs/store';
 import { LoginWithProvider, SetPersistence, SetPhase } from '../actions/auth.action';
 import { LoginProvider } from '../enums/login-provider.enum';
 import { AuthPhase } from '../enums/auth-phase.enum';
-import { FirebaseService } from '../../core/module/firebase.service';
+import { FirebaseService } from '../../core/module/firebase/firebase.service';
 
 export interface AuthStateModel {
   phase: AuthPhase;

@@ -1,6 +1,8 @@
 <div fxLayout fxLayoutGap="10px" class="stream-list">
   <mat-card *ngFor="let device of devices$ | async" class="no-signal">
-    <div class="device-label mat-body-strong">{{device.name}}</div>
+    <a mat-button routerLink="stream/{{device.id}}">
+      <div class="device-label mat-body-strong">{{device.get('name')}}</div>
+    </a>
   </mat-card>
   <mat-card *ngIf="canAddCurrent$ | async" class="add-current">
     <button mat-button (click)="onAddCurrentClick()">

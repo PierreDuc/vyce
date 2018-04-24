@@ -8,7 +8,7 @@ import { User } from '@firebase/auth-types';
 
 import { Store } from '@ngxs/store';
 
-import { FirebaseService } from '../../module/firebase.service';
+import { FirebaseService } from '../../module/firebase/firebase.service';
 
 import { LoginProvider } from '../../../shared/enums/login-provider.enum';
 import { LoginUser, LogoutUser } from '../../../shared/actions/user.action';

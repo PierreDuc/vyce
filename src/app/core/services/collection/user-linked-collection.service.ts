@@ -3,8 +3,9 @@ import { takeUntil } from 'rxjs/operators';
 
 import { Store } from '@ngxs/store';
 
-import { FirebaseService } from '../../module/firebase.service';
+import { FirebaseService } from '../../module/firebase/firebase.service';
 import { DataCollectionService } from './data-collection.service';
+import { DocumentTypedSnapshot } from '../../interface/document-data.interface';
 
 export abstract class UserLinkedCollectionService<T extends object> extends DataCollectionService<T> {
   protected get subPath(): string | undefined {
@@ -28,10 +29,16 @@ export abstract class UserLinkedCollectionService<T extends object> extends Data
 
   private readonly authChange = new Subject<void>();
 
-  getDocs$(): Observable<T[]> {
-    return new Observable<T[]>(subscriber => {
+  getDoc$(id: string): Observable<DocumentTypedSnapshot<T>> {
+    return new Observable<DocumentTypedSnapshot<T>>(subscriber => {
+      this.subs.push(this.doc(id).onSnapshot(doc => subscriber.next(doc as DocumentTypedSnapshot<T>)));
+    }).pipe(takeUntil(this.authChange));
+  }
+
+  getDocs$(): Observable<DocumentTypedSnapshot<T>[]> {
+    return new Observable<DocumentTypedSnapshot<T>[]>(subscriber => {
       this.subs.push(
-        this.collection().onSnapshot(snapshot => subscriber.next(snapshot.docs.map(doc => doc.data() as T)))
+        this.collection().onSnapshot(snapshot => subscriber.next(snapshot.docs as DocumentTypedSnapshot<T>[]))
       );
     }).pipe(takeUntil(this.authChange));
   }

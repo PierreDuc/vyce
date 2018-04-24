@@ -12,7 +12,7 @@ import { UserState } from '../shared/states/user.state';
 import { DevicesState } from '../shared/states/devices.state';
 import { SharedModule } from '../shared/shared.module';
 
-import { FirebaseModule } from './module/firebase.module';
+import { FirebaseModule } from './module/firebase/firebase.module';
 
 import { UiStateService } from './services/state/ui-state.service';
 import { AuthStateService } from './services/state/auth-state.service';
@@ -20,6 +20,8 @@ import { MediaDevicesService } from './services/media-devices.service';
 import { UsersCollectionService } from './services/collection/users-collection.service';
 import { DevicesCollectionService } from './services/collection/devices-collection.service';
 import { IndexDbUserService } from './services/index-db-user.service';
+
+import { AuthGuard } from './guards/auth.guard';
 
 @NgModule({
   imports: [
@@ -37,7 +39,8 @@ import { IndexDbUserService } from './services/index-db-user.service';
     UsersCollectionService,
     DevicesCollectionService,
     MediaDevicesService,
-    IndexDbUserService
+    IndexDbUserService,
+    AuthGuard
   ]
 })
 export class CoreModule {}

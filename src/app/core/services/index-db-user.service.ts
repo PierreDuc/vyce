@@ -5,6 +5,7 @@ import { Store } from '@ngxs/store';
 import { del, get, keys, set, Store as IdbStore } from 'idb-keyval';
 
 import { UserStore } from '../../shared/enums/user-store.enum';
+import { AppState } from '../interface/app-state.interface';
 
 @Injectable()
 export class IndexDbUserService {
@@ -15,9 +16,9 @@ export class IndexDbUserService {
   readonly stores: Map<UserStore, IdbStore> = new Map<UserStore, IdbStore>();
 
   get<T>(key: string, store: UserStore): Promise<T | null> {
-    const uid: string | null = this.uid();
+    const uid = this.uid();
 
-    if (!uid) {
+    if (uid == null) {
       return Promise.resolve(null);
     }
 
@@ -25,9 +26,9 @@ export class IndexDbUserService {
   }
 
   set(key: string, value: any, store: UserStore): Promise<void> {
-    const uid: string | null = this.uid();
+    const uid = this.uid();
 
-    if (!uid) {
+    if (uid == null) {
       return Promise.resolve();
     }
 
@@ -35,9 +36,9 @@ export class IndexDbUserService {
   }
 
   del(key: string, store: UserStore): Promise<void> {
-    const uid: string | null = this.uid();
+    const uid = this.uid();
 
-    if (!uid) {
+    if (uid == null) {
       return Promise.resolve();
     }
 
@@ -45,9 +46,9 @@ export class IndexDbUserService {
   }
 
   async keys(store: UserStore): Promise<string[]> {
-    const uid: string | null = this.uid();
+    const uid = this.uid();
 
-    if (!uid) {
+    if (uid == null) {
       return Promise.resolve([]);
     }
 
@@ -57,7 +58,7 @@ export class IndexDbUserService {
   }
 
   private uid(): string | null {
-    return this.store.selectSnapshot<string>(state => state.user.uid);
+    return this.store.selectSnapshot((state: AppState) => state.user.uid);
   }
 
   private getStore(store: UserStore): IdbStore {

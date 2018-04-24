@@ -3,12 +3,11 @@ import { Observable } from 'rxjs/index';
 import { DocumentSnapshot, DocumentReference, CollectionReference, DocumentData } from '@firebase/firestore-types';
 
 import { DataPath } from '../../../shared/enums/data-path.enum';
-import { FirebaseService } from '../../module/firebase.service';
+import { FirebaseService } from '../../module/firebase/firebase.service';
+import { DocumentTypedSnapshot } from '../../interface/document-data.interface';
 
 export abstract class DataCollectionService<T extends object> {
   protected abstract readonly dataPath: DataPath;
-
-  protected streams$ = new Map<string, Observable<DocumentSnapshot>>();
 
   protected subPath: string | undefined;
 
@@ -26,38 +25,25 @@ export abstract class DataCollectionService<T extends object> {
     return this.doc(id).update(data);
   }
 
-  getDoc(id: string): Promise<DocumentSnapshot> {
-    return this.doc(id).get();
+  getDoc(id: string): Promise<DocumentTypedSnapshot<T>> {
+    return this.doc(id).get() as Promise<DocumentTypedSnapshot<T>>;
   }
 
   delete(id: string): Promise<void> {
     return this.doc(id).delete();
   }
 
-  getDoc$(id: string): Observable<DocumentSnapshot> {
-    if (!this.streams$.has(id)) {
-      this.streams$.set(
-        id,
-        new Observable(subscriber => {
-          this.doc(id).onSnapshot(snapshot => {
-            subscriber.next(snapshot);
-          });
-        })
-      );
-    }
-
-    return this.streams$.get(id) as Observable<DocumentSnapshot>;
-  }
-
-  getDocs(): Promise<DocumentData[]> {
-    return this.collection()
-      .get()
-      .then(snapshot => snapshot.docs.map(doc => doc.data()));
-  }
-
-  getDocs$(): Observable<T[]> {
+  getDoc$(id: string): Observable<DocumentTypedSnapshot<T>> {
     return new Observable(subscriber => {
-      this.collection().onSnapshot(snapshot => subscriber.next(snapshot.docs.map(doc => doc.data() as T)));
+      this.doc(id).onSnapshot(doc => subscriber.next(doc as DocumentTypedSnapshot<T>));
+    });
+  }
+
+  getDocs$(): Observable<DocumentTypedSnapshot<T>[]> {
+    return new Observable(subscriber => {
+      this.collection().onSnapshot(snapshot =>
+        subscriber.next(snapshot.docs.map(doc => doc.data() as DocumentTypedSnapshot<T>))
+      );
     });
   }
 

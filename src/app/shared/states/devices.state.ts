@@ -9,8 +9,9 @@ import {
   RemoveLocalDevice
 } from '../actions/devices.action';
 import { MediaDevicesService } from '../../core/services/media-devices.service';
-import { ShowAddDevice, ShowSnackbar } from '../actions/ui.action';
+import { HideAddDevice, ShowAddDevice, ShowSnackbar } from '../actions/ui.action';
 import { LocalDeviceState } from '../enums/local-device-state.enum';
+import { DocumentTypedSnapshot } from '../../core/interface/document-data.interface';
 
 export interface DeviceInputModel {
   deviceId: string;
@@ -25,7 +26,7 @@ export interface LocalDeviceModel {
 }
 
 export interface DeviceStateModel {
-  devices: LocalDeviceModel[];
+  devices: DocumentTypedSnapshot<LocalDeviceModel>[];
   localDevices: string[];
   localDeviceState: LocalDeviceState;
 }
@@ -42,7 +43,7 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
   constructor(private readonly dc: DevicesCollectionService, private readonly md: MediaDevicesService) {}
 
   @Selector()
-  static devices(state: DeviceStateModel): LocalDeviceModel[] {
+  static devices(state: DeviceStateModel): DocumentTypedSnapshot<LocalDeviceModel>[] {
     return state.devices;
   }
 
@@ -70,15 +71,29 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
       localDevices.map(localDevice => this.md.getLocalDevice(localDevice) as Promise<string[]>)
     );
 
-    const missingDevice = docs.findIndex((doc, index) => {
+    let missingDevice = docs.findIndex((doc, index) => {
       const device = doc.data() as LocalDeviceModel;
 
       if (device.audio && !localDeviceIds[index].includes(device.audio.deviceId)) {
         return false;
       }
 
-      return !device.video || localDeviceIds[index].includes(device.video.deviceId);
+      return !!device.video && !localDeviceIds[index].includes(device.video.deviceId);
     });
+
+    if (missingDevice === -1) {
+      const { audio, video } = this.md.devices$.getValue();
+
+      missingDevice = docs.findIndex((doc, index) => {
+        const device = doc.data() as LocalDeviceModel;
+
+        if (device.audio && !audio.map(d => d.deviceId).includes(device.audio.deviceId)) {
+          return false;
+        }
+
+        return !!device.video && !video.map(d => d.deviceId).includes(device.video.deviceId);
+      });
+    }
 
     if (missingDevice > -1) {
       if (getState().localDeviceState !== LocalDeviceState.LocalNotFound) {
@@ -90,6 +105,13 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
     }
 
     if (docs.length > 0) {
+      if (
+        getState().localDeviceState !== LocalDeviceState.Linked &&
+        getState().localDeviceState !== LocalDeviceState.NotLinked
+      ) {
+        dispatch(new HideAddDevice());
+      }
+
       patchState({ localDeviceState: LocalDeviceState.Linked });
     } else {
       patchState({ localDeviceState: LocalDeviceState.NotLinked });
@@ -127,7 +149,6 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
 
   @Action(RemoveLocalDevice)
   removeLocalDevice({ dispatch }: T, { deviceId }: RemoveLocalDevice): Promise<void> {
-    console.log('RemoveLocalDevice', deviceId);
     return this.md.removeLocalDevice(deviceId).then(() => this.dc.delete(deviceId));
   }
 

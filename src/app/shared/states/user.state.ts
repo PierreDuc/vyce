@@ -9,13 +9,16 @@ import { SetPhase } from '../actions/auth.action';
 import { ClearDevices, ListDevices } from '../actions/devices.action';
 import { LogoutUser, LoginUser } from '../actions/user.action';
 
-export interface UserStateModel {
-  uid?: string | null;
+export interface UserDataModel {
+  emailVerified?: boolean;
+}
+
+export interface UserStateModel extends UserDataModel {
+  uid: string | null;
   email?: string | null;
   displayName?: string | null;
   photoURL?: string | null;
   isNewUser?: boolean;
-  emailVerified?: boolean;
 }
 
 @State<UserStateModel>({
