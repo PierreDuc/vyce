@@ -71,29 +71,31 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
       localDevices.map(localDevice => this.md.getLocalDevice(localDevice) as Promise<string[]>)
     );
 
-    let missingDevice = docs.findIndex((doc, index) => {
+    const { audio, video } = this.md.devices$.getValue();
+
+    const missingDevice = docs.findIndex((doc, index) => {
       const device = doc.data() as LocalDeviceModel;
 
-      if (device.audio && !localDeviceIds[index].includes(device.audio.deviceId)) {
-        return false;
+      if (device.audio) {
+        if (
+          !audio.map(d => d.deviceId).includes(device.audio.deviceId) ||
+          !localDeviceIds[index].includes(device.audio.deviceId)
+        ) {
+          return true;
+        }
       }
 
-      return !!device.video && !localDeviceIds[index].includes(device.video.deviceId);
-    });
-
-    if (missingDevice === -1) {
-      const { audio, video } = this.md.devices$.getValue();
-
-      missingDevice = docs.findIndex((doc, index) => {
-        const device = doc.data() as LocalDeviceModel;
-
-        if (device.audio && !audio.map(d => d.deviceId).includes(device.audio.deviceId)) {
-          return false;
+      if (device.video) {
+        if (
+          !video.map(d => d.deviceId).includes(device.video.deviceId) ||
+          !localDeviceIds[index].includes(device.video.deviceId)
+        ) {
+          return true;
         }
+      }
 
-        return !!device.video && !video.map(d => d.deviceId).includes(device.video.deviceId);
-      });
-    }
+      return false;
+    });
 
     if (missingDevice > -1) {
       if (getState().localDeviceState !== LocalDeviceState.LocalNotFound) {

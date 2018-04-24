@@ -4,13 +4,13 @@
 
     <div fxLayout="column" fxLayoutGap="32px" matDialogContent>
       <div *ngIf="state === states.NotLinked" class="mat-subheading-1">I've detected the input devices on your system. Please select your desired device(s). You can also disable either the audio or video stream.<br>
-        I've have already selected the default devices from your system
+        I've have already selected the default devices from your system.
       </div>
 
-      <div *ngIf="state === states.LocalNotSaved" class="mat-subheading-1">I've detected a stored device on this system, but I cannot link it with any known saved device. Please choose the correct input devices to link this device to your account, or delete the locally stored device
+      <div *ngIf="state === states.LocalNotSaved" class="mat-subheading-1">I've detected a stored device on this system, but I cannot link it with any known device on your account. Please choose the correct input devices to link this device to your account, or delete the locally stored device.
       </div>
 
-      <div *ngIf="state === states.LocalNotFound" class="mat-subheading-1">I've detected a linked device on this system, but I can no longer find the linked input devices. Please connect the appropriate devices, link other input devices, or delete this linked device.
+      <div *ngIf="state === states.LocalNotFound" class="mat-subheading-1">You've added a device from this system before, but I can no longer find the input devices. Please connect the appropriate devices. You can also choose to link other input devices, or delete this linked device.
       </div>
 
       <div *ngFor="let source of sources" fxLayout="column" fxLayoutGap="16px" fxFlex="none">
@@ -33,7 +33,7 @@
       </div>
 
       <mat-form-field>
-        <input matInput cdkFocusInitial type="text" placeholder="Device name" required [(ngModel)]="deviceName">
+        <input matInput cdkFocusInitial type="text" placeholder="Device name" required [(ngModel)]="deviceName" (keydown.enter)="addDevice.focus()">
       </mat-form-field>
     </div>
 
@@ -43,7 +43,7 @@
               (click)="onDeleteClick(state)">Delete</button>
       <button mat-raised-button matDialogClose color="accent"
               [disabled]="!inputs.audio.selected && !inputs.video.selected || inputs.audio.disabled && inputs.video.disabled || !deviceName"
-              (click)="onAddDeviceClick(inputs, state)" >Add device</button>
+              (click)="onAddDeviceClick(inputs, state)" #addDevice="matButton">Add device</button>
     </div>
   </ng-container>
 </ng-container>
