@@ -22,11 +22,14 @@ import { DevicesCollectionService } from './services/collection/devices-collecti
 import { IndexDbUserService } from './services/index-db-user.service';
 
 import { AuthGuard } from './guards/auth.guard';
+import {StreamConnectionService} from "./services/stream-connection.service";
+import {StreamState} from "../shared/states/stream.state";
+import {StreamCollectionService} from "./services/collection/stream-collection.service";
 
 @NgModule({
   imports: [
     FirebaseModule.initialize(environment.firebase),
-    NgxsModule.forRoot([UiState, AuthState, UserState, DevicesState]),
+    NgxsModule.forRoot([UiState, AuthState, UserState, DevicesState, StreamState]),
     MatSnackBarModule,
     MatDialogModule,
     SharedModule,
@@ -38,7 +41,9 @@ import { AuthGuard } from './guards/auth.guard';
     AuthStateService,
     UsersCollectionService,
     DevicesCollectionService,
+    StreamCollectionService,
     MediaDevicesService,
+    StreamConnectionService,
     IndexDbUserService,
     AuthGuard
   ]

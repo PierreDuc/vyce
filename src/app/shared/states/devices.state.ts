@@ -48,6 +48,11 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
   }
 
   @Selector()
+  static localDevices(state: DeviceStateModel): string[] {
+    return state.localDevices;
+  }
+
+  @Selector()
   static localDeviceState(state: DeviceStateModel): LocalDeviceState {
     return state.localDeviceState;
   }
@@ -114,9 +119,9 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
         dispatch(new HideAddDevice());
       }
 
-      patchState({ localDeviceState: LocalDeviceState.Linked });
+      patchState({ localDeviceState: LocalDeviceState.Linked, localDevices: localDevices });
     } else {
-      patchState({ localDeviceState: LocalDeviceState.NotLinked });
+      patchState({ localDeviceState: LocalDeviceState.NotLinked, localDevices: [] });
     }
   }
 

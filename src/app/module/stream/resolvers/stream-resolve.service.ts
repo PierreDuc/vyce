@@ -6,8 +6,8 @@ import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from '@angular/r
 
 import { Select, Store } from '@ngxs/store';
 
-import { StreamState } from '../states/stream.state';
-import { LoadStream } from '../actions/stream.action';
+import { StreamState } from '../../../shared/states/stream.state';
+import { LoadStream } from '../../../shared/actions/stream.action';
 import { LocalDeviceModel } from '../../../shared/states/devices.state';
 
 @Injectable()
