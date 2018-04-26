@@ -22,9 +22,9 @@ import { DevicesCollectionService } from './services/collection/devices-collecti
 import { IndexDbUserService } from './services/index-db-user.service';
 
 import { AuthGuard } from './guards/auth.guard';
-import {StreamConnectionService} from "./services/stream-connection.service";
-import {StreamState} from "../shared/states/stream.state";
-import {StreamCollectionService} from "./services/collection/stream-collection.service";
+import { StreamConnectionService } from './services/stream-connection.service';
+import { StreamState } from '../shared/states/stream.state';
+import { StreamCollectionService } from './services/collection/stream-collection.service';
 
 @NgModule({
   imports: [

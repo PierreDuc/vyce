@@ -8,6 +8,7 @@ import { HideLogin, ShowSnackbar } from '../actions/ui.action';
 import { SetPhase } from '../actions/auth.action';
 import { ClearDevices, ListDevices } from '../actions/devices.action';
 import { LogoutUser, LoginUser } from '../actions/user.action';
+import { StartListenStream, StopListenStream } from '../actions/stream.action';
 
 export interface UserDataModel {
   emailVerified?: boolean;
@@ -43,7 +44,7 @@ export class UserState<T extends StateContext<UserStateModel>> {
 
     setState({ uid: null });
 
-    dispatch([new SetPhase(AuthPhase.LoggedOut), new ClearDevices()]);
+    dispatch([new SetPhase(AuthPhase.LoggedOut), new ClearDevices(), new StopListenStream()]);
   }
 
   @Action(LoginUser)
@@ -70,7 +71,8 @@ export class UserState<T extends StateContext<UserStateModel>> {
       new HideLogin(),
       new SetPhase(AuthPhase.LoggedIn),
       new ListDevices(),
-      new ShowSnackbar({ message: `Successfully logged in as ${loginUser.displayName}` })
+      new ShowSnackbar({ message: `Successfully logged in as ${loginUser.displayName}` }),
+      new StartListenStream()
     ]);
   }
 }

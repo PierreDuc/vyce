@@ -8,7 +8,7 @@ import { AppComponent } from './app.component';
 import { AppShellModule } from './shell/app-shell.module';
 import { LoadModule } from './load/load.module';
 import { environment } from '../environments/environment';
-import {FlexLayoutModule} from "@angular/flex-layout";
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   imports: [

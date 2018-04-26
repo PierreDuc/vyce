@@ -1,52 +1,68 @@
-import {Action, Select, State, StateContext} from '@ngxs/store';
+import { mergeMap } from 'rxjs/operators';
+import { merge, Observable } from 'rxjs/index';
 
-import {DevicesState} from './devices.state';
-import {LoadStream, StartListenStream, StopListenStream} from '../actions/stream.action';
+import { Action, Select, Selector, State, StateContext } from '@ngxs/store';
+
+import { DevicesState } from './devices.state';
+import { AddTrack, LoadStream, OpenStream, StartListenStream, StopListenStream } from '../actions/stream.action';
 import { DocumentTypedSnapshot } from '../../core/interface/document-data.interface';
-import {StreamCollectionService} from "../../core/services/collection/stream-collection.service";
-import {StreamConnectionService} from "../../core/services/stream-connection.service";
-import {merge, Observable} from "rxjs/index";
-import {mergeMap} from "rxjs/operators";
+import { StreamCollectionService } from '../../core/services/collection/stream-collection.service';
+import { StreamConnectionService } from '../../core/services/stream-connection.service';
 
 export interface StreamStateModel {
-  listening: boolean,
-  streams: RTCSessionDescription[]
+  listening: boolean;
+  streams: { [streamId: string]: MediaStreamTrack | null };
 }
 
 export interface StreamSignalData {
-  streams: RTCSessionDescription[]
+  offers: string[];
+  answers: {
+    [key: string]: string;
+  };
 }
 
 @State<StreamStateModel>({
   name: 'stream',
   defaults: {
     listening: false,
-    streams: []
+    streams: {}
   }
 })
 export class StreamState<T extends StateContext<StreamStateModel>> {
-  @Select(DevicesState.localDevices)
-  private readonly localDevices$!: Observable<string[]>;
+  @Select(DevicesState.localDevices) private readonly localDevices$!: Observable<string[]>;
+
+  @Selector()
+  static streams(state: StreamStateModel): { [streamId: string]: MediaStreamTrack | null } {
+    return state.streams;
+  }
 
   constructor(private readonly ss: StreamCollectionService, private readonly sc: StreamConnectionService) {}
 
   @Action(StartListenStream)
   startListenStream({ getState }: T): void {
-    this.localDevices$.pipe(
-      mergeMap((locals: string[]) => merge<DocumentTypedSnapshot<StreamSignalData>>(
-        ...locals.map(local => this.ss.getDoc$(local))
-      ))
-    ).subscribe(streamDoc => {
-      const remotes = streamDoc.data().streams;
-      const locals = getState().streams;
+    this.localDevices$
+      .pipe(
+        mergeMap((locals: string[]) =>
+          merge<DocumentTypedSnapshot<StreamSignalData>>(...locals.map(local => this.ss.getDoc$(local)))
+        )
+      )
+      .subscribe(async streamDoc => {
+        const offers = streamDoc.data().offers;
 
-      const olds = locals.filter(local => remotes.every(remote => remote.sdp !== local.sdp));
-      const news = remotes.filter(remote => locals.every(local => local.sdp !== remote.sdp));
-      const next = remotes.filter(remote => locals.some(local => local.sdp === remote.sdp && local.type !== remote.sdp));
+        if (offers.length) {
+          streamDoc.ref.update({ offers: [] });
 
+          const answers: { [key: string]: string } = {};
 
-      debugger;
-    });
+          await Promise.all(
+            offers.map(async offer => {
+              answers[offer] = await this.sc.getAnswer(streamDoc.id, offer);
+            })
+          );
+
+          streamDoc.ref.update({ answers });
+        }
+      });
   }
 
   @Action(StopListenStream)
@@ -56,25 +72,39 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
     // });
   }
 
+  @Action(AddTrack)
+  addTrack({ patchState, getState }: T, { streamId, track }: AddTrack): void {
+    const streams = getState().streams;
+    streams[streamId] = track;
+    patchState({ streams });
+  }
+
   @Action(LoadStream)
-  async loadStream({ setState }: T, { streamId }: LoadStream): Promise<void> {
-    const session = await this.sc.startStream(streamId);
+  async loadStream({ patchState }: T, { streamId }: LoadStream): Promise<void> {
+    const offer = await this.sc.getOffer(streamId);
 
-    if (session) {
+    if (offer) {
       const doc = await this.ss.getDoc(streamId);
-      const streams: RTCSessionDescription[] = doc.get('streams') || [];
-      let stream: Partial<RTCSessionDescription> | undefined = streams.find(s => s.sdp === session.sdp);
+      const offers: string[] = doc.get('offers') || [];
 
-      if (!stream) {
-        stream = {sdp: session.sdp};
-        streams.push(stream as RTCSessionDescription);
-      }
+      offers.push(offer);
 
-      stream.type = session.type;
+      await doc.ref.update({ offers });
 
-      console.log(streams);
+      const sub = this.ss.getDoc$(streamId).subscribe(streamDoc => {
+        const answers = streamDoc.data().answers;
 
-      await doc.ref.set({streams});
+        if (answers && answers[offer]) {
+          const answer = answers[offer];
+
+          sub.unsubscribe();
+          delete answers[offer];
+
+          streamDoc.ref.update({ answers });
+
+          this.sc.setConnection(streamId, answer);
+        }
+      });
     }
   }
 }

@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { DataPath } from '../../../shared/enums/data-path.enum';
 import { UserLinkedCollectionService } from './user-linked-collection.service';
 import { FirebaseService } from '../../module/firebase/firebase.service';
-import {StreamSignalData} from "../../../shared/states/stream.state";
+import { StreamSignalData } from '../../../shared/states/stream.state';
 
 @Injectable()
 export class StreamCollectionService extends UserLinkedCollectionService<StreamSignalData> {
