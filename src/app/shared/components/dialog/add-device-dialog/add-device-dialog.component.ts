@@ -76,8 +76,6 @@ export class AddDeviceDialogComponent {
   onDeleteClick(state: LocalDeviceState): void {
     const deviceId = this.getDeviceId();
 
-    console.log(deviceId);
-
     if (deviceId) {
       this.store.dispatch(new RemoveLocalDevice(deviceId)).subscribe(() => {
         if (state === LocalDeviceState.LocalNotSaved) {

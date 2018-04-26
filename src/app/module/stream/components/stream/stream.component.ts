@@ -21,8 +21,6 @@ export class StreamComponent implements AfterViewInit, OnDestroy {
       .select(StreamState.streams)
       .pipe(map(streams => streams[this.route.snapshot.params.streamId]), takeUntil(this.destroy))
       .subscribe(stream => {
-        console.log('stream', stream);
-
         if (this.streamEl) {
           this.streamEl.nativeElement.srcObject = stream;
         }

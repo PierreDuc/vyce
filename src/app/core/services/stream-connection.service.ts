@@ -16,8 +16,10 @@ export class StreamConnectionService {
 
   public async getOffer(streamId: string): Promise<string> {
     // https://github.com/WebsiteBeaver/simple-webrtc-video-chat-using-firebase/blob/master/js/script.js
+    const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
 
     const pc = this.getDestStreamConnection(streamId);
+    pc.addStream(stream);
 
     await pc.setLocalDescription(await pc.createOffer());
 
@@ -71,41 +73,9 @@ export class StreamConnectionService {
     if (!pc) {
       pc = new RTCPeerConnection({});
 
-      // pc['onopen'] = (e: any): void => {
-      //   console.log('onopen', e);
-      // };
-      //
-      // pc['onpeeridentity'] = (e: any): void => {
-      //   console.log('onpeeridentity', e);
-      // };
-      //
-      pc['ontrack'] = (e: any): void => {
-        console.log('ontrack', e);
-      };
-
-      pc.onaddstream = e => {
-        console.log('onaddstream', e);
-      };
-
-      pc.onicecandidate = e => {
-        console.log('onicecandidate', e);
-      };
-
-      pc.oniceconnectionstatechange = e => {
-        console.log('oniceconnectionstatechange', e);
-      };
-
-      pc.onicegatheringstatechange = e => {
-        console.log('onicegatheringstatechange', e);
-      };
-
-      pc.onnegotiationneeded = e => {
-        console.log('onnegotiationneeded', e);
-      };
-
-      pc.onsignalingstatechange = e => {
-        console.log('onsignalingstatechange', e);
-      };
+      pc.addEventListener('track', (e: any) => {
+        this.store.dispatch(new AddTrack(streamId, e.streams[0]));
+      });
 
       streams[key] = pc;
 

@@ -15,10 +15,9 @@ export interface StreamStateModel {
 }
 
 export interface StreamSignalData {
-  offers: string[];
-  answers: {
-    [key: string]: string;
-  };
+  offer: string;
+  answer: string;
+  needOffer: boolean;
 }
 
 @State<StreamStateModel>({
@@ -39,7 +38,7 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
   constructor(private readonly ss: StreamCollectionService, private readonly sc: StreamConnectionService) {}
 
   @Action(StartListenStream)
-  startListenStream({ getState }: T): void {
+  startListenStream(): void {
     this.localDevices$
       .pipe(
         mergeMap((locals: string[]) =>
@@ -47,20 +46,19 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
         )
       )
       .subscribe(async streamDoc => {
-        const offers = streamDoc.data().offers;
+        if (streamDoc.exists) {
+          if (streamDoc.data().needOffer) {
+            streamDoc.ref.set({});
+            const offer = await this.sc.getOffer(streamDoc.id);
+            streamDoc.ref.set({offer});
+          } else {
+            const answer = streamDoc.data().answer;
+            streamDoc.ref.set({});
 
-        if (offers.length) {
-          streamDoc.ref.update({ offers: [] });
-
-          const answers: { [key: string]: string } = {};
-
-          await Promise.all(
-            offers.map(async offer => {
-              answers[offer] = await this.sc.getAnswer(streamDoc.id, offer);
-            })
-          );
-
-          streamDoc.ref.update({ answers });
+            if (answer) {
+              this.sc.setConnection(streamDoc.id, answer);
+            }
+          }
         }
       });
   }
@@ -76,35 +74,31 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
   addTrack({ patchState, getState }: T, { streamId, track }: AddTrack): void {
     const streams = getState().streams;
     streams[streamId] = track;
-    patchState({ streams });
+
+    patchState({ streams: Object.assign({}, streams) });
   }
 
   @Action(LoadStream)
   async loadStream({ patchState }: T, { streamId }: LoadStream): Promise<void> {
-    const offer = await this.sc.getOffer(streamId);
+    const doc = await this.ss.getDoc(streamId);
 
-    if (offer) {
-      const doc = await this.ss.getDoc(streamId);
-      const offers: string[] = doc.get('offers') || [];
-
-      offers.push(offer);
-
-      await doc.ref.update({ offers });
-
-      const sub = this.ss.getDoc$(streamId).subscribe(streamDoc => {
-        const answers = streamDoc.data().answers;
-
-        if (answers && answers[offer]) {
-          const answer = answers[offer];
-
-          sub.unsubscribe();
-          delete answers[offer];
-
-          streamDoc.ref.update({ answers });
-
-          this.sc.setConnection(streamId, answer);
-        }
-      });
+    if (!doc.exists) {
+      await doc.ref.set({});
     }
+
+    doc.ref.update({needOffer: true});
+
+    const sub = this.ss.getDoc$(streamId).subscribe(async streamDoc => {
+      const offer = streamDoc.data().offer;
+
+      if (offer) {
+        sub.unsubscribe();
+        streamDoc.ref.set({});
+
+        const answer = await this.sc.getAnswer(streamId, offer);
+
+        streamDoc.ref.set({answer});
+      }
+    });
   }
 }
