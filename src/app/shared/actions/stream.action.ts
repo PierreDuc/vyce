@@ -18,6 +18,12 @@ export class AddTrack {
   constructor(readonly streamId: string, readonly track: MediaStreamTrack | null) {}
 }
 
+export class StopStream {
+  static readonly type = '[STREAM] Stop streaming from id';
+
+  constructor(readonly streamId: string) {}
+}
+
 export class OpenStream {
   static readonly type = '[STREAM] Stream is ready to be opened';
 

@@ -4,7 +4,7 @@ import { merge, Observable } from 'rxjs/index';
 import { Action, Select, Selector, State, StateContext } from '@ngxs/store';
 
 import { DevicesState } from './devices.state';
-import { AddTrack, LoadStream, OpenStream, StartListenStream, StopListenStream } from '../actions/stream.action';
+import {AddTrack, LoadStream, OpenStream, StartListenStream, StopListenStream, StopStream} from '../actions/stream.action';
 import { DocumentTypedSnapshot } from '../../core/interface/document-data.interface';
 import { StreamCollectionService } from '../../core/services/collection/stream-collection.service';
 import { StreamConnectionService } from '../../core/services/stream-connection.service';
@@ -47,17 +47,14 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
       )
       .subscribe(async streamDoc => {
         if (streamDoc.exists) {
-          if (streamDoc.data().needOffer) {
-            streamDoc.ref.set({});
+          const {needOffer, answer} = streamDoc.data();
+          streamDoc.ref.set({});
+
+          if (needOffer) {
             const offer = await this.sc.getOffer(streamDoc.id);
             streamDoc.ref.set({offer});
-          } else {
-            const answer = streamDoc.data().answer;
-            streamDoc.ref.set({});
-
-            if (answer) {
-              this.sc.setConnection(streamDoc.id, answer);
-            }
+          } else if (answer) {
+            this.sc.setConnection(streamDoc.id, answer);
           }
         }
       });
@@ -68,6 +65,11 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
     // this.ss.getDoc$(streamId).subscribe(stream => {
     //   setState(stream);
     // });
+  }
+
+  @Action(StopStream)
+  stopStream(ctx: T, { streamId }: StopStream): void {
+    this.sc.stopStream(streamId);
   }
 
   @Action(AddTrack)

@@ -4,6 +4,7 @@ import { StreamState } from '../../../../shared/states/stream.state';
 import { ActivatedRoute } from '@angular/router';
 import { map, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs/Subject';
+import {AddTrack, StopStream} from "../../../../shared/actions/stream.action";
 
 @Component({
   templateUrl: './stream.component.html',
@@ -28,6 +29,8 @@ export class StreamComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.store.dispatch(new StopStream(this.route.snapshot.params.streamId));
+
     this.destroy.next();
     this.destroy.complete();
   }

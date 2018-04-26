@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngxs/store';
-import { AddTrack, OpenStream } from '../../shared/actions/stream.action';
+import {AddTrack, OpenStream, StopStream} from '../../shared/actions/stream.action';
 
 @Injectable()
 export class StreamConnectionService {
@@ -15,19 +15,17 @@ export class StreamConnectionService {
   constructor(private readonly store: Store) {}
 
   public async getOffer(streamId: string): Promise<string> {
-    // https://github.com/WebsiteBeaver/simple-webrtc-video-chat-using-firebase/blob/master/js/script.js
     const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+    const pc = this.getSourceStreamConnection(streamId);
 
-    const pc = this.getDestStreamConnection(streamId);
     pc.addStream(stream);
 
     await pc.setLocalDescription(await pc.createOffer());
-
     return (pc.localDescription && pc.localDescription.sdp) || '';
   }
 
   public async getAnswer(streamId: string, sdp: string): Promise<string> {
-    const pc = this.getSourceStreamConnection(streamId);
+    const pc = this.getDestStreamConnection(streamId);
 
     await pc.setRemoteDescription(
       new RTCSessionDescription({
@@ -35,14 +33,28 @@ export class StreamConnectionService {
         type: 'offer'
       })
     );
-
     await pc.setLocalDescription(await pc.createAnswer());
 
     return (pc.localDescription && pc.localDescription.sdp) || '';
   }
 
+  public stopStream(streamId: string): void {
+    const streams = this.streams.get(streamId);
+
+    console.log(streams);
+
+    if (streams) {
+      if (streams.dest) {
+        streams.dest.close();
+      }
+      if (streams.source) {
+        streams.source.close();
+      }
+    }
+  }
+
   public setConnection(streamId: string, sdp: string): Promise<void> {
-    const pc = this.getDestStreamConnection(streamId);
+    const pc = this.getSourceStreamConnection(streamId);
 
     return pc.setRemoteDescription(
       new RTCSessionDescription({
@@ -75,6 +87,20 @@ export class StreamConnectionService {
 
       pc.addEventListener('track', (e: any) => {
         this.store.dispatch(new AddTrack(streamId, e.streams[0]));
+      });
+
+      pc.addEventListener('close', () => {
+        console.log('close', key);
+        if (streams) {
+          delete streams[key];
+          this.streams.set(streamId, streams);
+        }
+        if (pc) {
+          pc.getLocalStreams().forEach(stream => stream.getTracks().forEach(track => track.stop()));
+          pc.getRemoteStreams().forEach(stream => stream.getTracks().forEach(track => track.stop()));
+        }
+
+        this.store.dispatch(new StopStream(streamId));
       });
 
       streams[key] = pc;
