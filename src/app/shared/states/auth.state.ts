@@ -1,4 +1,4 @@
-import * as firebase from 'firebase/app';
+import { auth } from 'firebase';
 
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 
@@ -10,7 +10,7 @@ import { FirebaseService } from '../../core/module/firebase/firebase.service';
 export interface AuthStateModel {
   phase: AuthPhase;
   provider?: LoginProvider;
-  persistence?: firebase.auth.Auth.Persistence;
+  persistence?: auth.Auth.Persistence;
 }
 
 @State<AuthStateModel>({
@@ -20,9 +20,9 @@ export interface AuthStateModel {
   }
 })
 export class AuthState<T extends StateContext<AuthStateModel>> {
-  private authProviders: { [k in LoginProvider]: { new (): firebase.auth.AuthProvider } } = {
-    [LoginProvider.Google]: firebase.auth.GoogleAuthProvider,
-    [LoginProvider.Facebook]: firebase.auth.FacebookAuthProvider
+  private authProviders: { [k in LoginProvider]: { new (): auth.AuthProvider } } = {
+    [LoginProvider.Google]: auth.GoogleAuthProvider,
+    [LoginProvider.Facebook]: auth.FacebookAuthProvider
   };
 
   constructor(readonly fs: FirebaseService) {}

@@ -1,31 +1,76 @@
 import { Injectable } from '@angular/core';
+
 import { Store } from '@ngxs/store';
-import {AddTrack, OpenStream, StopStream} from '../../shared/actions/stream.action';
+
+import { AddTrack } from '../../shared/actions/stream.action';
+import { StreamSignalData } from '../../shared/states/stream.state';
+import { MediaDevicesService } from './media-devices.service';
 
 @Injectable()
 export class StreamConnectionService {
-  private readonly streams = new Map<
+  private readonly connections = new Map<
     string,
     {
-      source: RTCPeerConnection | undefined;
-      dest: RTCPeerConnection | undefined;
+      source?: RTCPeerConnection;
+      dest?: RTCPeerConnection;
     }
   >();
 
-  constructor(private readonly store: Store) {}
+  constructor(private readonly store: Store, private readonly md: MediaDevicesService) {}
 
-  public async getOffer(streamId: string): Promise<string> {
-    const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-    const pc = this.getSourceStreamConnection(streamId);
+  public async processSignal(
+    streamId: string,
+    signalId: string,
+    { needOffer, offer, answer }: StreamSignalData
+  ): Promise<Partial<StreamSignalData>> {
+    if (needOffer) {
+      return { offer: await this.getOffer(signalId, streamId) };
+    }
 
-    pc.addStream(stream);
+    if (offer) {
+      return { answer: await this.getAnswer(signalId, streamId, offer) };
+    }
 
-    await pc.setLocalDescription(await pc.createOffer());
-    return (pc.localDescription && pc.localDescription.sdp) || '';
+    if (answer) {
+      await this.setConnection(signalId, answer);
+    }
+
+    return {};
   }
 
-  public async getAnswer(streamId: string, sdp: string): Promise<string> {
-    const pc = this.getDestStreamConnection(streamId);
+  public stopStream(streamId: string): void {
+    // const streams = this.connections.get(streamId);
+    //
+    // if (streams) {
+    //   if (streams.dest) {
+    //     streams.dest.close();
+    //   }
+    //   if (streams.source) {
+    //     streams.source.close();
+    //   }
+    // }
+  }
+
+  private async getOffer(signalId: string, streamId: string): Promise<string | null> {
+    const stream = await this.md.getUserMedia(streamId);
+
+    if (stream) {
+      const pc = this.getSignalConnection(signalId, 'source');
+
+      pc.addStream(stream);
+      await pc.setLocalDescription(await pc.createOffer());
+
+      return pc.localDescription && pc.localDescription.sdp;
+    }
+
+    return null;
+  }
+
+  private async getAnswer(signalId: string, streamId: string, sdp: string): Promise<string | null> {
+    const pc = this.getSignalConnection(signalId, 'dest');
+    pc.addEventListener('track', (e: any) => {
+      this.store.dispatch(new AddTrack(streamId, e.streams[0]));
+    });
 
     await pc.setRemoteDescription(
       new RTCSessionDescription({
@@ -35,26 +80,11 @@ export class StreamConnectionService {
     );
     await pc.setLocalDescription(await pc.createAnswer());
 
-    return (pc.localDescription && pc.localDescription.sdp) || '';
+    return pc.localDescription && pc.localDescription.sdp;
   }
 
-  public stopStream(streamId: string): void {
-    const streams = this.streams.get(streamId);
-
-    console.log(streams);
-
-    if (streams) {
-      if (streams.dest) {
-        streams.dest.close();
-      }
-      if (streams.source) {
-        streams.source.close();
-      }
-    }
-  }
-
-  public setConnection(streamId: string, sdp: string): Promise<void> {
-    const pc = this.getSourceStreamConnection(streamId);
+  private setConnection(signalId: string, sdp: string): Promise<void> {
+    const pc = this.getSignalConnection(signalId, 'source');
 
     return pc.setRemoteDescription(
       new RTCSessionDescription({
@@ -64,50 +94,14 @@ export class StreamConnectionService {
     );
   }
 
-  private getSourceStreamConnection(streamId: string): RTCPeerConnection {
-    return this.getStreamConnection(streamId, 'source');
-  }
+  private getSignalConnection(signalId: string, key: 'source' | 'dest'): RTCPeerConnection {
+    const streams = this.connections.get(signalId) || {};
 
-  private getDestStreamConnection(streamId: string): RTCPeerConnection {
-    return this.getStreamConnection(streamId, 'dest');
-  }
-
-  private getStreamConnection(streamId: string, key: 'source' | 'dest'): RTCPeerConnection {
-    let streams = this.streams.get(streamId);
-    let pc: RTCPeerConnection | undefined;
-
-    if (!streams) {
-      streams = { source: undefined, dest: undefined };
+    if (!streams[key]) {
+      streams[key] = new RTCPeerConnection({});
+      this.connections.set(signalId, streams);
     }
 
-    pc = streams[key];
-
-    if (!pc) {
-      pc = new RTCPeerConnection({});
-
-      pc.addEventListener('track', (e: any) => {
-        this.store.dispatch(new AddTrack(streamId, e.streams[0]));
-      });
-
-      pc.addEventListener('close', () => {
-        console.log('close', key);
-        if (streams) {
-          delete streams[key];
-          this.streams.set(streamId, streams);
-        }
-        if (pc) {
-          pc.getLocalStreams().forEach(stream => stream.getTracks().forEach(track => track.stop()));
-          pc.getRemoteStreams().forEach(stream => stream.getTracks().forEach(track => track.stop()));
-        }
-
-        this.store.dispatch(new StopStream(streamId));
-      });
-
-      streams[key] = pc;
-
-      this.streams.set(streamId, streams);
-    }
-
-    return pc;
+    return streams[key] as RTCPeerConnection;
   }
 }

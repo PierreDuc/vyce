@@ -1,6 +1,4 @@
-import * as firebase from 'firebase/app';
-
-import { Observable } from 'rxjs/Observable';
+import { auth } from 'firebase';
 
 import { Injectable } from '@angular/core';
 
@@ -30,7 +28,7 @@ export class AuthStateService {
   }
 
   public initAuth(): Promise<void> {
-    return this.store.dispatch(new SetPersistence(firebase.auth.Auth.Persistence.LOCAL)).toPromise();
+    return this.store.dispatch(new SetPersistence(auth.Auth.Persistence.LOCAL)).toPromise();
   }
 
   private updateUser(user: User | null): void {

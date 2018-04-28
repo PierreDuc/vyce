@@ -1,5 +1,7 @@
 <mat-toolbar fxLayout fxLayoutAlign="space-between center" role="heading">
-  <vc-logo [size]="'50px'" [showName]="true"></vc-logo>
+  <a [routerLink]="'/'">
+    <vc-logo [size]="'50px'" [showName]="true"></vc-logo>
+  </a>
   <vc-avatar [user]="user$ | async" [matTooltip]="(loggedIn$ | async) ? 'Logout' : 'Login'" matTooltipPosition="left"
              (click)="onAvatarClick()"></vc-avatar>
 </mat-toolbar>

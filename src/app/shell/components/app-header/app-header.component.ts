@@ -8,8 +8,6 @@ import { AuthStateService } from '../../../core/services/state/auth-state.servic
 import { UserState, UserStateModel } from '../../../shared/states/user.state';
 import { AuthState } from '../../../shared/states/auth.state';
 import { ShowLogin } from '../../../shared/actions/ui.action';
-import { LogoutUser } from '../../../shared/actions/user.action';
-import { FirebaseService } from '../../../core/module/firebase/firebase.service';
 
 @Component({
   selector: 'vc-app-header',

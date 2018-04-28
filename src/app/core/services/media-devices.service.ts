@@ -39,6 +39,22 @@ export class MediaDevicesService {
       });
   }
 
+  public async getUserMedia(deviceId: string): Promise<MediaStream | void> {
+    const localDevices: string[] | null = await this.getLocalDevice(deviceId);
+
+    if (localDevices) {
+      const { video, audio } = this.devices$.getValue();
+
+      const videoDevice = video.find(d => localDevices.includes(d.deviceId));
+      const audioDevice = audio.find(d => localDevices.includes(d.deviceId));
+
+      return navigator.mediaDevices.getUserMedia({
+        video: videoDevice ? { deviceId: videoDevice.deviceId } : false,
+        audio: audioDevice ? { deviceId: audioDevice.deviceId } : false
+      });
+    }
+  }
+
   public getLocalDevices(): Promise<string[]> {
     return this.idu.keys(UserStore.Devices);
   }

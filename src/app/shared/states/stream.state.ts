@@ -1,13 +1,14 @@
-import { mergeMap } from 'rxjs/operators';
+import { filter, first, mergeMap, tap } from 'rxjs/operators';
 import { merge, Observable } from 'rxjs/index';
 
 import { Action, Select, Selector, State, StateContext } from '@ngxs/store';
 
 import { DevicesState } from './devices.state';
-import {AddTrack, LoadStream, OpenStream, StartListenStream, StopListenStream, StopStream} from '../actions/stream.action';
+import { AddTrack, LoadStream, StartListenStream, StopListenStream, StopStream } from '../actions/stream.action';
 import { DocumentTypedSnapshot } from '../../core/interface/document-data.interface';
 import { StreamCollectionService } from '../../core/services/collection/stream-collection.service';
 import { StreamConnectionService } from '../../core/services/stream-connection.service';
+import { FirebaseService } from '../../core/module/firebase/firebase.service';
 
 export interface StreamStateModel {
   listening: boolean;
@@ -15,9 +16,14 @@ export interface StreamStateModel {
 }
 
 export interface StreamSignalData {
-  offer: string;
-  answer: string;
-  needOffer: boolean;
+  offer: string | null;
+  answer: string | null;
+  needOffer: boolean | null;
+  timestamp: number;
+}
+
+export interface StreamData {
+  [key: string]: StreamSignalData;
 }
 
 @State<StreamStateModel>({
@@ -42,20 +48,31 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
     this.localDevices$
       .pipe(
         mergeMap((locals: string[]) =>
-          merge<DocumentTypedSnapshot<StreamSignalData>>(...locals.map(local => this.ss.getDoc$(local)))
+          merge<DocumentTypedSnapshot<StreamData>>(...locals.map(local => this.ss.getDoc$(local)))
+        ),
+        filter(
+          streamDoc =>
+            streamDoc.exists && !!streamDoc.data() && Object.values(streamDoc.data()).filter(s => !s.offer).length > 0
         )
       )
       .subscribe(async streamDoc => {
-        if (streamDoc.exists) {
-          const {needOffer, answer} = streamDoc.data();
-          streamDoc.ref.set({});
+        const data: StreamData = Object.assign({}, streamDoc.data());
+        const signals = Object.entries(data).filter(
+          ([signalId, signal]) => FirebaseService.timestamp() - signal.timestamp < 10000 && !signal.offer
+        );
 
-          if (needOffer) {
-            const offer = await this.sc.getOffer(streamDoc.id);
-            streamDoc.ref.set({offer});
-          } else if (answer) {
-            this.sc.setConnection(streamDoc.id, answer);
+        if (signals.length) {
+          const newData: StreamData = {};
+
+          for (const [signalId, signal] of signals) {
+            const process: Partial<StreamSignalData> = await this.sc.processSignal(streamDoc.id, signalId, signal);
+
+            if (Object.keys(process).length > 0) {
+              newData[signalId] = { ...process, timestamp: FirebaseService.timestamp() } as StreamSignalData;
+            }
           }
+
+          streamDoc.ref.set(newData);
         }
       });
   }
@@ -83,24 +100,26 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
   @Action(LoadStream)
   async loadStream({ patchState }: T, { streamId }: LoadStream): Promise<void> {
     const doc = await this.ss.getDoc(streamId);
+    const signalId = this.ss.createPushId();
 
     if (!doc.exists) {
       await doc.ref.set({});
     }
 
-    doc.ref.update({needOffer: true});
+    await doc.ref.update({ [signalId]: { needOffer: true, timestamp: FirebaseService.timestamp() } });
 
-    const sub = this.ss.getDoc$(streamId).subscribe(async streamDoc => {
-      const offer = streamDoc.data().offer;
+    this.ss
+      .getDoc$(streamId)
+      .pipe(filter(streamDoc => !!streamDoc.data()[signalId] && !!streamDoc.data()[signalId].offer), first())
+      .subscribe(async streamDoc => {
+        const signal = streamDoc.data()[signalId];
+        const process = await this.sc.processSignal(streamId, signalId, signal);
 
-      if (offer) {
-        sub.unsubscribe();
-        streamDoc.ref.set({});
+        process.timestamp = FirebaseService.timestamp();
 
-        const answer = await this.sc.getAnswer(streamId, offer);
-
-        streamDoc.ref.set({answer});
-      }
-    });
+        streamDoc.ref.set({
+          [signalId]: process
+        });
+      });
   }
 }

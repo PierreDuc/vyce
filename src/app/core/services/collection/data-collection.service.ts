@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs/index';
 
-import { DocumentSnapshot, DocumentReference, CollectionReference, DocumentData } from '@firebase/firestore-types';
+import { DocumentReference, CollectionReference } from '@firebase/firestore-types';
 
 import { DataPath } from '../../../shared/enums/data-path.enum';
 import { FirebaseService } from '../../module/firebase/firebase.service';

@@ -12,6 +12,12 @@ export class RemoveLocalDevice {
   constructor(readonly deviceId: string) {}
 }
 
+export class RemoveDevice {
+  static readonly type = '[DEVICES] Remove device';
+
+  constructor(readonly deviceId: string) {}
+}
+
 export class ListDevices {
   static readonly type = '[DEVICES] Get devices from user';
 }

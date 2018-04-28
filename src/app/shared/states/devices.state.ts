@@ -6,12 +6,14 @@ import {
   CheckLocalDevice,
   ClearDevices,
   ListDevices,
+  RemoveDevice,
   RemoveLocalDevice
 } from '../actions/devices.action';
 import { MediaDevicesService } from '../../core/services/media-devices.service';
 import { HideAddDevice, ShowAddDevice, ShowSnackbar } from '../actions/ui.action';
 import { LocalDeviceState } from '../enums/local-device-state.enum';
 import { DocumentTypedSnapshot } from '../../core/interface/document-data.interface';
+import { Observable } from 'rxjs/Observable';
 
 export interface DeviceInputModel {
   deviceId: string;
@@ -36,7 +38,7 @@ export interface DeviceStateModel {
   defaults: {
     devices: [],
     localDevices: [],
-    localDeviceState: LocalDeviceState.NotLinked
+    localDeviceState: LocalDeviceState.Unknown
   }
 })
 export class DevicesState<T extends StateContext<DeviceStateModel>> {
@@ -119,7 +121,7 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
         dispatch(new HideAddDevice());
       }
 
-      patchState({ localDeviceState: LocalDeviceState.Linked, localDevices: localDevices });
+      patchState({ localDeviceState: LocalDeviceState.Linked, localDevices });
     } else {
       patchState({ localDeviceState: LocalDeviceState.NotLinked, localDevices: [] });
     }
@@ -155,8 +157,13 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
   }
 
   @Action(RemoveLocalDevice)
-  removeLocalDevice({ dispatch }: T, { deviceId }: RemoveLocalDevice): Promise<void> {
+  removeLocalDevice(ctx: T, { deviceId }: RemoveLocalDevice): Promise<void> {
     return this.md.removeLocalDevice(deviceId).then(() => this.dc.delete(deviceId));
+  }
+
+  @Action(RemoveDevice)
+  removeDevice({ dispatch }: T, { deviceId }: RemoveDevice): Observable<void> {
+    return dispatch(new RemoveLocalDevice(deviceId));
   }
 
   private createInputDevice(device: DeviceInputModel | false): DeviceInputModel | false {

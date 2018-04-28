@@ -1,5 +1,5 @@
-import * as firebase from 'firebase';
-import 'firebase/firestore';
+import '@firebase/firestore';
+import { firestore, initializeApp } from 'firebase';
 
 import { NgModule } from '@angular/core';
 
@@ -7,9 +7,9 @@ import { FirebaseConfig } from './interface/firebase-config.interface';
 import { FirebaseService } from './firebase.service';
 
 export function _firebaseAppFactory(config: FirebaseConfig): FirebaseService {
-  const fs: FirebaseService = firebase.initializeApp(config);
+  const fs: FirebaseService = initializeApp(config);
 
-  firebase.firestore().settings({
+  firestore().settings({
     timestampsInSnapshots: true
   });
 
