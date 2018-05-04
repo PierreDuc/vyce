@@ -1,4 +1,4 @@
-import { filter, first, mergeMap, tap } from 'rxjs/operators';
+import { filter, first, mergeMap } from 'rxjs/operators';
 import { merge, Observable } from 'rxjs/index';
 
 import { Action, Select, Selector, State, StateContext } from '@ngxs/store';
@@ -10,9 +10,13 @@ import { StreamCollectionService } from '../../core/services/collection/stream-c
 import { StreamConnectionService } from '../../core/services/stream-connection.service';
 import { FirebaseService } from '../../core/module/firebase/firebase.service';
 
+export interface StreamModel {
+  [signalId: string]: MediaStreamTrack | null;
+}
+
 export interface StreamStateModel {
   listening: boolean;
-  streams: { [streamId: string]: MediaStreamTrack | null };
+  streams: { [streamId: string]: StreamModel };
 }
 
 export interface StreamSignalData {
@@ -37,7 +41,7 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
   @Select(DevicesState.localDevices) private readonly localDevices$!: Observable<string[]>;
 
   @Selector()
-  static streams(state: StreamStateModel): { [streamId: string]: MediaStreamTrack | null } {
+  static streams(state: StreamStateModel): { [streamId: string]: StreamModel } {
     return state.streams;
   }
 
@@ -85,14 +89,24 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
   }
 
   @Action(StopStream)
-  stopStream(ctx: T, { streamId }: StopStream): void {
+  stopStream({ patchState, getState }: T, { streamId }: StopStream): void {
     this.sc.stopStream(streamId);
+
+    const streams = getState().streams;
+    delete streams[streamId];
+
+    patchState({ streams: Object.assign({}, streams) });
   }
 
   @Action(AddTrack)
-  addTrack({ patchState, getState }: T, { streamId, track }: AddTrack): void {
+  addTrack({ patchState, getState }: T, { signalId, streamId, track }: AddTrack): void {
     const streams = getState().streams;
-    streams[streamId] = track;
+
+    if (!streams[streamId]) {
+      streams[streamId] = {};
+    }
+
+    streams[streamId][signalId] = track;
 
     patchState({ streams: Object.assign({}, streams) });
   }

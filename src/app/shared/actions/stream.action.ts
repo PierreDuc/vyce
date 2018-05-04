@@ -15,7 +15,7 @@ export class StopListenStream {
 export class AddTrack {
   static readonly type = '[STREAM] Add track to stream list';
 
-  constructor(readonly streamId: string, readonly track: MediaStreamTrack | null) {}
+  constructor(readonly signalId: string, readonly streamId: string, readonly track: MediaStreamTrack | null) {}
 }
 
 export class StopStream {

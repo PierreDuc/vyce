@@ -8,10 +8,7 @@ import { AuthStateService } from '../../../../core/services/state/auth-state.ser
   styleUrls: ['./login-dialog.component.scss']
 })
 export class LoginDialogComponent {
-  readonly loginProviders: [keyof LoginProvider, LoginProvider][] = Object.entries(LoginProvider) as [
-    keyof LoginProvider,
-    LoginProvider
-  ][];
+  readonly loginProviders = Object.entries(LoginProvider) as [keyof LoginProvider, LoginProvider][];
 
   constructor(readonly as: AuthStateService) {}
 

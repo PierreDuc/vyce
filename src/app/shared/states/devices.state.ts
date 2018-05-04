@@ -151,14 +151,21 @@ export class DevicesState<T extends StateContext<DeviceStateModel>> {
     const doc = await this.dc.add(device);
     await this.md.storeLocalDevice(doc.id, device);
 
+    dispatch(new CheckLocalDevice());
+
     dispatch(new ShowSnackbar({ message: 'Local device added', action: 'undo' })).subscribe(() => {
       dispatch(new RemoveLocalDevice(doc.id));
     });
   }
 
   @Action(RemoveLocalDevice)
-  removeLocalDevice(ctx: T, { deviceId }: RemoveLocalDevice): Promise<void> {
-    return this.md.removeLocalDevice(deviceId).then(() => this.dc.delete(deviceId));
+  removeLocalDevice({ dispatch }: T, { deviceId }: RemoveLocalDevice): Promise<void> {
+    return this.md
+      .removeLocalDevice(deviceId)
+      .then(() => this.dc.delete(deviceId))
+      .then(() => {
+        dispatch(new CheckLocalDevice());
+      });
   }
 
   @Action(RemoveDevice)

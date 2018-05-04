@@ -39,7 +39,7 @@ export class StreamConnectionService {
   }
 
   public stopStream(streamId: string): void {
-    // const streams = this.connections.get(streamId);
+    const streams = this.connections.get(streamId);
     //
     // if (streams) {
     //   if (streams.dest) {
@@ -69,7 +69,7 @@ export class StreamConnectionService {
   private async getAnswer(signalId: string, streamId: string, sdp: string): Promise<string | null> {
     const pc = this.getSignalConnection(signalId, 'dest');
     pc.addEventListener('track', (e: any) => {
-      this.store.dispatch(new AddTrack(streamId, e.streams[0]));
+      this.store.dispatch(new AddTrack(signalId, streamId, e.streams[0]));
     });
 
     await pc.setRemoteDescription(

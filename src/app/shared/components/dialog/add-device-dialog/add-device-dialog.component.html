@@ -25,7 +25,8 @@
           </div>
 
           <mat-radio-group fxLayout="column" fxLayoutGap="8px" [(ngModel)]="input.selected" [disabled]="input.disabled">
-            <mat-radio-button *ngFor="let device of input.devices" [value]="device" [checked]="!input.disabled && device === input.selected">
+            <mat-radio-button *ngFor="let device of input.devices" [value]="device" [title]="device.label || device.deviceId"
+                              [checked]="!input.disabled && device === input.selected">
               {{device.label || device.deviceId}}
             </mat-radio-button>
           </mat-radio-group>
