@@ -95,8 +95,9 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
       ([s, signal]) => Object.keys(signal).includes(signalId)
     ) || [void 0];
 
+    this.sc.stopStream(signalId);
+
     if (streamId) {
-      this.sc.stopStream(signalId, streamId);
 
       streams[streamId][signalId] = null;
       patchState({ streams: Object.assign({}, streams) });
