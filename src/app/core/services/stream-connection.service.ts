@@ -38,17 +38,17 @@ export class StreamConnectionService {
     return {};
   }
 
-  public stopStream(streamId: string): void {
-    const streams = this.connections.get(streamId);
-    //
-    // if (streams) {
-    //   if (streams.dest) {
-    //     streams.dest.close();
-    //   }
-    //   if (streams.source) {
-    //     streams.source.close();
-    //   }
-    // }
+  public stopStream(signalId: string): void {
+    const streams = this.connections.get(signalId);
+
+    if (streams) {
+      if (streams.dest) {
+        streams.dest.close();
+      }
+      if (streams.source) {
+        streams.source.close();
+      }
+    }
   }
 
   private async getOffer(signalId: string, streamId: string): Promise<string | null> {
@@ -98,7 +98,18 @@ export class StreamConnectionService {
     const streams = this.connections.get(signalId) || {};
 
     if (!streams[key]) {
-      streams[key] = new RTCPeerConnection({});
+      const pc = new RTCPeerConnection({});
+      streams[key] = pc;
+
+      pc.addEventListener('iceconnectionstatechange', () => {
+        if (pc.signalingState === 'closed') {
+          pc.close();
+          pc.getLocalStreams().forEach(s => s.getTracks().forEach(t => t.stop()));
+
+          this.connections.delete(signalId);
+        }
+      });
+
       this.connections.set(signalId, streams);
     }
 

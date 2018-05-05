@@ -1,6 +1,9 @@
+import { Observable } from 'rxjs/index';
+
 import { Component } from '@angular/core';
+
 import { Select } from '@ngxs/store';
-import { Observable } from 'rxjs/Observable';
+
 import { AuthState } from '../../../../shared/states/auth.state';
 
 @Component({

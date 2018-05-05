@@ -11,7 +11,7 @@ import { StreamConnectionService } from '../../core/services/stream-connection.s
 import { FirebaseService } from '../../core/module/firebase/firebase.service';
 
 export interface StreamModel {
-  [signalId: string]: MediaStreamTrack | null;
+  [signalId: string]: MediaStream | null;
 }
 
 export interface StreamStateModel {
@@ -89,22 +89,24 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
   }
 
   @Action(StopStream)
-  stopStream({ patchState, getState }: T, { streamId }: StopStream): void {
-    this.sc.stopStream(streamId);
-
+  stopStream({ patchState, getState }: T, { signalId }: StopStream): void {
     const streams = getState().streams;
-    delete streams[streamId];
+    const [streamId] = Object.entries<StreamModel>(streams).find(
+      ([s, signal]) => Object.keys(signal).includes(signalId)
+    ) || [void 0];
 
-    patchState({ streams: Object.assign({}, streams) });
+    if (streamId) {
+      this.sc.stopStream(signalId, streamId);
+
+      streams[streamId][signalId] = null;
+      patchState({ streams: Object.assign({}, streams) });
+
+    }
   }
 
   @Action(AddTrack)
   addTrack({ patchState, getState }: T, { signalId, streamId, track }: AddTrack): void {
     const streams = getState().streams;
-
-    if (!streams[streamId]) {
-      streams[streamId] = {};
-    }
 
     streams[streamId][signalId] = track;
 
@@ -112,28 +114,41 @@ export class StreamState<T extends StateContext<StreamStateModel>> {
   }
 
   @Action(LoadStream)
-  async loadStream({ patchState }: T, { streamId }: LoadStream): Promise<void> {
+  async loadStream({ patchState, getState }: T, { signalId, streamId }: LoadStream): Promise<void> {
     const doc = await this.ss.getDoc(streamId);
-    const signalId = this.ss.createPushId();
+    const signal = signalId || this.ss.createPushId();
+
+    const streams = getState().streams;
+
+    if (!streams[streamId]) {
+      streams[streamId] = {};
+    }
+
+    streams[streamId][signal] = null;
+    patchState({ streams: Object.assign({}, streams) });
 
     if (!doc.exists) {
       await doc.ref.set({});
     }
 
-    await doc.ref.update({ [signalId]: { needOffer: true, timestamp: FirebaseService.timestamp() } });
+    await doc.ref.update({ [signal]: { needOffer: true, timestamp: FirebaseService.timestamp() } });
 
     this.ss
       .getDoc$(streamId)
-      .pipe(filter(streamDoc => !!streamDoc.data()[signalId] && !!streamDoc.data()[signalId].offer), first())
-      .subscribe(async streamDoc => {
-        const signal = streamDoc.data()[signalId];
-        const process = await this.sc.processSignal(streamId, signalId, signal);
+      .pipe(
+        filter(streamDoc => !!streamDoc.data()[signal] && !!streamDoc.data()[signal].offer),
+        first()
+      )
+      .subscribe(async (streamDoc: DocumentTypedSnapshot<StreamData>) => {
+        const offer = streamDoc.data()[signal];
+        const process = await this.sc.processSignal(streamId, signal, offer);
 
         process.timestamp = FirebaseService.timestamp();
 
         streamDoc.ref.set({
-          [signalId]: process
+          [signal]: process
         });
       });
+
   }
 }
