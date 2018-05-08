@@ -25,6 +25,8 @@ import { AuthGuard } from './guards/auth.guard';
 import { StreamConnectionService } from './services/stream-connection.service';
 import { StreamState } from '../shared/states/stream.state';
 import { StreamCollectionService } from './services/collection/stream-collection.service';
+import { StreamConnectorService } from './services/connectors/stream-connector.service';
+import { RtcPeerConnectorService } from './services/connectors/rtc-peer-connector.service';
 
 @NgModule({
   imports: [
@@ -45,7 +47,8 @@ import { StreamCollectionService } from './services/collection/stream-collection
     MediaDevicesService,
     StreamConnectionService,
     IndexDbUserService,
-    AuthGuard
+    AuthGuard,
+    { provide: StreamConnectorService, useClass: RtcPeerConnectorService, multi: true }
   ]
 })
 export class CoreModule {}

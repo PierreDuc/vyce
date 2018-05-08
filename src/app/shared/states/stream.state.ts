@@ -1,17 +1,24 @@
-import { filter, first, mergeMap } from 'rxjs/operators';
-import { merge, Observable } from 'rxjs/index';
+import { Observable } from 'rxjs/index';
 
 import { Action, Select, Selector, State, StateContext } from '@ngxs/store';
 
 import { DevicesState } from './devices.state';
-import { AddTrack, LoadStream, StartListenStream, StopListenStream, StopStream } from '../actions/stream.action';
-import { DocumentTypedSnapshot } from '../../core/interface/document-data.interface';
+import {
+  AddMediaStream,
+  StartListenStream,
+  StartStream,
+  StopListenStream,
+  RemoveStream
+} from '../actions/stream.action';
 import { StreamCollectionService } from '../../core/services/collection/stream-collection.service';
 import { StreamConnectionService } from '../../core/services/stream-connection.service';
-import { FirebaseService } from '../../core/module/firebase/firebase.service';
+import { StreamConnectionType } from '../enums/stream-connection-type.enum';
 
 export interface StreamModel {
-  [signalId: string]: MediaStream | null;
+  [negotiationId: string]: {
+    connection: StreamConnectionData;
+    stream: MediaStream | null;
+  };
 }
 
 export interface StreamStateModel {
@@ -19,15 +26,18 @@ export interface StreamStateModel {
   streams: { [streamId: string]: StreamModel };
 }
 
-export interface StreamSignalData {
-  offer: string | null;
-  answer: string | null;
-  needOffer: boolean | null;
+export interface StreamConnectionData {
+  type: StreamConnectionType;
+  callerId: string;
+  streamId: string;
+  negotiationId: string;
   timestamp: number;
 }
 
-export interface StreamData {
-  [key: string]: StreamSignalData;
+export interface RtcPeerConnectionData extends StreamConnectionData {
+  offer?: string | null;
+  answer?: string | null;
+  needOffer?: boolean | null;
 }
 
 @State<StreamStateModel>({
@@ -40,116 +50,62 @@ export interface StreamData {
 export class StreamState<T extends StateContext<StreamStateModel>> {
   @Select(DevicesState.localDevices) private readonly localDevices$!: Observable<string[]>;
 
+  constructor(private readonly ss: StreamCollectionService, private readonly sc: StreamConnectionService) {}
+
   @Selector()
   static streams(state: StreamStateModel): { [streamId: string]: StreamModel } {
     return state.streams;
   }
 
-  constructor(private readonly ss: StreamCollectionService, private readonly sc: StreamConnectionService) {}
-
   @Action(StartListenStream)
-  startListenStream(): void {
-    this.localDevices$
-      .pipe(
-        mergeMap((locals: string[]) =>
-          merge<DocumentTypedSnapshot<StreamData>>(...locals.map(local => this.ss.getDoc$(local)))
-        ),
-        filter(
-          streamDoc =>
-            streamDoc.exists && !!streamDoc.data() && Object.values(streamDoc.data()).filter(s => !s.offer).length > 0
-        )
-      )
-      .subscribe(async streamDoc => {
-        const data: StreamData = Object.assign({}, streamDoc.data());
-        const signals = Object.entries(data).filter(
-          ([signalId, signal]) => FirebaseService.timestamp() - signal.timestamp < 10000 && !signal.offer
-        );
+  startListenStream({ patchState, getState }: T): void {
+    if (!getState().listening) {
+      this.sc.startListening();
 
-        if (signals.length) {
-          const newData: StreamData = {};
-
-          for (const [signalId, signal] of signals) {
-            const process: Partial<StreamSignalData> = await this.sc.processSignal(streamDoc.id, signalId, signal);
-
-            if (Object.keys(process).length > 0) {
-              newData[signalId] = { ...process, timestamp: FirebaseService.timestamp() } as StreamSignalData;
-            }
-          }
-
-          streamDoc.ref.set(newData);
-        }
-      });
+      patchState({ listening: true });
+    }
   }
 
   @Action(StopListenStream)
-  stopListenStream({ setState }: T, { streamId }: LoadStream): void {
-    // this.ss.getDoc$(streamId).subscribe(stream => {
-    //   setState(stream);
-    // });
-  }
+  stopListenStream({ patchState, getState }: T): void {
+    if (getState().listening) {
+      this.sc.stopListening();
 
-  @Action(StopStream)
-  stopStream({ patchState, getState }: T, { signalId }: StopStream): void {
-    const streams = getState().streams;
-    const [streamId] = Object.entries<StreamModel>(streams).find(
-      ([s, signal]) => Object.keys(signal).includes(signalId)
-    ) || [void 0];
-
-    this.sc.stopStream(signalId);
-
-    if (streamId) {
-
-      streams[streamId][signalId] = null;
-      patchState({ streams: Object.assign({}, streams) });
-
+      patchState({ listening: false });
     }
   }
 
-  @Action(AddTrack)
-  addTrack({ patchState, getState }: T, { signalId, streamId, track }: AddTrack): void {
+  @Action(StartStream)
+  startStream({ patchState, getState }: T, { connection }: StartStream): void {
     const streams = getState().streams;
 
-    streams[streamId][signalId] = track;
+    if (!streams[connection.streamId]) {
+      streams[connection.streamId] = {};
+    }
 
-    patchState({ streams: Object.assign({}, streams) });
+    streams[connection.streamId][connection.negotiationId] = {
+      connection,
+      stream: null
+    };
+
+    patchState({ streams: { ...streams } });
   }
 
-  @Action(LoadStream)
-  async loadStream({ patchState, getState }: T, { signalId, streamId }: LoadStream): Promise<void> {
-    const doc = await this.ss.getDoc(streamId);
-    const signal = signalId || this.ss.createPushId();
-
+  @Action(RemoveStream)
+  removeStream({ patchState, getState }: T, { connection }: RemoveStream): void {
     const streams = getState().streams;
 
-    if (!streams[streamId]) {
-      streams[streamId] = {};
-    }
+    delete streams[connection.streamId][connection.negotiationId];
 
-    streams[streamId][signal] = null;
-    patchState({ streams: Object.assign({}, streams) });
+    patchState({ streams: { ...streams } });
+  }
 
-    if (!doc.exists) {
-      await doc.ref.set({});
-    }
+  @Action(AddMediaStream)
+  addMediaStream({ patchState, getState }: T, { connection, stream }: AddMediaStream): void {
+    const streams = getState().streams;
 
-    await doc.ref.update({ [signal]: { needOffer: true, timestamp: FirebaseService.timestamp() } });
+    streams[connection.streamId][connection.negotiationId].stream = stream;
 
-    this.ss
-      .getDoc$(streamId)
-      .pipe(
-        filter(streamDoc => !!streamDoc.data()[signal] && !!streamDoc.data()[signal].offer),
-        first()
-      )
-      .subscribe(async (streamDoc: DocumentTypedSnapshot<StreamData>) => {
-        const offer = streamDoc.data()[signal];
-        const process = await this.sc.processSignal(streamId, signal, offer);
-
-        process.timestamp = FirebaseService.timestamp();
-
-        streamDoc.ref.set({
-          [signal]: process
-        });
-      });
-
+    patchState({ streams: { ...streams } });
   }
 }

@@ -1,118 +1,100 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 
-import { Store } from '@ngxs/store';
+import { Select } from '@ngxs/store';
 
-import { AddTrack } from '../../shared/actions/stream.action';
-import { StreamSignalData } from '../../shared/states/stream.state';
-import { MediaDevicesService } from './media-devices.service';
+import { StreamConnectionData } from '../../shared/states/stream.state';
+import { StreamConnectorService } from './connectors/stream-connector.service';
+import { filter, mergeMap, takeUntil } from 'rxjs/operators';
+import { merge, Observable, Subject } from 'rxjs/index';
+import { DocumentTypedSnapshot } from '../interface/document-data.interface';
+import { DevicesState } from '../../shared/states/devices.state';
+import { StreamCollectionService } from './collection/stream-collection.service';
+import { FirebaseService } from '../module/firebase/firebase.service';
 
 @Injectable()
 export class StreamConnectionService {
-  private readonly connections = new Map<
-    string,
-    {
-      source?: RTCPeerConnection;
-      dest?: RTCPeerConnection;
-    }
-  >();
+  @Select(DevicesState.localDevices) private readonly localDevices$!: Observable<string[]>;
 
-  constructor(private readonly store: Store, private readonly md: MediaDevicesService) {}
+  private readonly stopStream$ = new Subject<void>();
+  private readonly disconnectStream$ = new Subject<StreamConnectionData>();
 
-  public async processSignal(
-    streamId: string,
-    signalId: string,
-    { needOffer, offer, answer }: StreamSignalData
-  ): Promise<Partial<StreamSignalData>> {
-    if (needOffer) {
-      return { offer: await this.getOffer(signalId, streamId) };
-    }
+  constructor(
+    @Inject(StreamConnectorService) private readonly connectors: StreamConnectorService<StreamConnectionData>[],
+    private readonly ss: StreamCollectionService
+  ) {}
 
-    if (offer) {
-      return { answer: await this.getAnswer(signalId, streamId, offer) };
-    }
+  public async connectToStream(streamId: string): Promise<StreamConnectionData> {
+    for (const connector of this.connectors) {
+      try {
+        if (await connector.isAvailable()) {
+          const connection = connector.connect(streamId);
 
-    if (answer) {
-      await this.setConnection(signalId, answer);
-    }
+          this.ss
+            .getDoc$(streamId)
+            .pipe(
+              takeUntil(this.stopStream$),
+              takeUntil(
+                this.disconnectStream$.pipe(filter(({ negotiationId }) => negotiationId === connection.negotiationId))
+              ),
+              filter(streamDataDoc => streamDataDoc.exists)
+            )
+            .subscribe(streamDataDoc => this.processMessage(streamDataDoc, true));
 
-    return {};
-  }
+          await this.ss.set(connection, streamId);
 
-  public stopStream(signalId: string): void {
-    const streams = this.connections.get(signalId);
-
-    if (streams) {
-      if (streams.dest) {
-        streams.dest.close();
-      }
-      if (streams.source) {
-        streams.source.close();
-      }
-    }
-  }
-
-  private async getOffer(signalId: string, streamId: string): Promise<string | null> {
-    const stream = await this.md.getUserMedia(streamId);
-
-    if (stream) {
-      const pc = this.getSignalConnection(signalId, 'source');
-
-      pc.addStream(stream);
-      await pc.setLocalDescription(await pc.createOffer());
-
-      return pc.localDescription && pc.localDescription.sdp;
-    }
-
-    return null;
-  }
-
-  private async getAnswer(signalId: string, streamId: string, sdp: string): Promise<string | null> {
-    const pc = this.getSignalConnection(signalId, 'dest');
-    pc.addEventListener('track', (e: any) => {
-      this.store.dispatch(new AddTrack(signalId, streamId, e.streams[0]));
-    });
-
-    await pc.setRemoteDescription(
-      new RTCSessionDescription({
-        sdp,
-        type: 'offer'
-      })
-    );
-    await pc.setLocalDescription(await pc.createAnswer());
-
-    return pc.localDescription && pc.localDescription.sdp;
-  }
-
-  private setConnection(signalId: string, sdp: string): Promise<void> {
-    const pc = this.getSignalConnection(signalId, 'source');
-
-    return pc.setRemoteDescription(
-      new RTCSessionDescription({
-        sdp,
-        type: 'answer'
-      })
-    );
-  }
-
-  private getSignalConnection(signalId: string, key: 'source' | 'dest'): RTCPeerConnection {
-    const streams = this.connections.get(signalId) || {};
-
-    if (!streams[key]) {
-      const pc = new RTCPeerConnection({});
-      streams[key] = pc;
-
-      pc.addEventListener('iceconnectionstatechange', () => {
-        if (pc.signalingState === 'closed') {
-          pc.close();
-          pc.getLocalStreams().forEach(s => s.getTracks().forEach(t => t.stop()));
-
-          this.connections.delete(signalId);
+          return connection;
         }
-      });
-
-      this.connections.set(signalId, streams);
+      } catch {}
     }
 
-    return streams[key] as RTCPeerConnection;
+    throw new Error();
+  }
+
+  public startListening(): void {
+    this.localDevices$
+      .pipe(
+        takeUntil(this.stopStream$),
+        mergeMap((locals: string[]) => merge(...locals.map(local => this.ss.getDoc$(local)))),
+        filter(streamDataDoc => streamDataDoc.exists)
+      )
+      .subscribe(streamDataDoc => this.processMessage(streamDataDoc, false));
+  }
+
+  public stopListening(): void {
+    this.stopStream$.next();
+  }
+
+  public stopStream(connection: StreamConnectionData): void {
+    const connector = this.connectors.find(c => c.type === connection.type);
+
+    if (connector) {
+      connector.disconnect(connection);
+      this.disconnectStream$.next(connection);
+    }
+  }
+
+  private async processMessage(
+    streamDataDoc: DocumentTypedSnapshot<StreamConnectionData>,
+    fromCaller: boolean
+  ): Promise<void> {
+    const streamData = streamDataDoc.data();
+    const connector = this.connectors.find(c => c.type === streamData.type);
+
+    let response: StreamConnectionData | void;
+
+    if (connector && connector.shouldHandleMessage(streamData, fromCaller)) {
+      if (!connector.isTimedOut(streamData)) {
+        response = await connector.processMessage(streamData);
+      }
+
+      if (response) {
+        streamDataDoc.ref.set({
+          ...response,
+          timestamp: FirebaseService.timestamp()
+        });
+      } else {
+        streamDataDoc.ref.delete();
+      }
+    }
   }
 }

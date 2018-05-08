@@ -4,12 +4,12 @@ import { Action, Selector, State, StateContext } from '@ngxs/store';
 
 import { DevicesCollectionService } from '../../core/services/collection/devices-collection.service';
 import {
-AddLocalDevice,
-CheckLocalDevice,
-ClearDevices,
-ListDevices,
-RemoveDevice,
-RemoveLocalDevice
+  AddLocalDevice,
+  CheckLocalDevice,
+  ClearDevices,
+  ListDevices,
+  RemoveDevice,
+  RemoveLocalDevice
 } from '../actions/devices.action';
 import { MediaDevicesService } from '../../core/services/media-devices.service';
 import { HideAddDevice, ShowAddDevice, ShowSnackbar } from '../actions/ui.action';
