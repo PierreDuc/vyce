@@ -1,1 +1,12 @@
+<mat-toolbar *ngIf="device$ | async as device" fxLayout fxLayoutAlign="space-between center">
+  <button mat-icon-button>
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <span fxFlex="auto" class="stream-view-title" vcDialogMover>{{device.get('name')}}</span>
+
+  <button mat-icon-button (click)="onCloseClick()">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-toolbar>
 <video autoplay playsinline [srcObject]="stream$ | async"></video>

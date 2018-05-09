@@ -13,7 +13,9 @@ export class StreamStateService {
 
   private readonly dialogSettings: MatDialogConfig = {
     hasBackdrop: false,
-    closeOnNavigation: false
+    closeOnNavigation: false,
+    autoFocus: false,
+    panelClass: 'stream-view-pane'
   };
 
   constructor(private readonly md: MatDialog, private sc: StreamConnectionService, private readonly store: Store) {}
