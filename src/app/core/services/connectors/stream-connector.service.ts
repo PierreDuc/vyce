@@ -1,9 +1,12 @@
+import { Store } from '@ngxs/store';
+
+import { StartStream } from '../../../shared/actions/stream.action';
 import { StreamConnectionData } from '../../../shared/states/stream.state';
 import { StreamConnectionType } from '../../../shared/enums/stream-connection-type.enum';
-import { StreamCollectionService } from '../collection/stream-collection.service';
+
 import { FirebaseService } from '../../module/firebase/firebase.service';
-import { Store } from '@ngxs/store';
-import { StartStream } from '../../../shared/actions/stream.action';
+
+import { StreamCollectionService } from '../collection/stream-collection.service';
 
 export abstract class StreamConnectorService<T extends StreamConnectionData> {
   public abstract readonly type: StreamConnectionType;

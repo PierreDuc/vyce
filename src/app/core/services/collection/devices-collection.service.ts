@@ -1,11 +1,13 @@
-import { Store } from '@ngxs/store';
-
 import { Injectable } from '@angular/core';
+
+import { Store } from '@ngxs/store';
 
 import { DataPath } from '../../../shared/enums/data-path.enum';
 import { LocalDeviceModel } from '../../../shared/states/devices.state';
-import { UserLinkedCollectionService } from './user-linked-collection.service';
+
 import { FirebaseService } from '../../module/firebase/firebase.service';
+
+import { UserLinkedCollectionService } from './user-linked-collection.service';
 
 @Injectable()
 export class DevicesCollectionService extends UserLinkedCollectionService<LocalDeviceModel> {

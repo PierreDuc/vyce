@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 
-import { DataCollectionService } from './data-collection.service';
-
 import { DataPath } from '../../../shared/enums/data-path.enum';
 import { UserDataModel } from '../../../shared/states/user.state';
+
 import { FirebaseService } from '../../module/firebase/firebase.service';
+
+import { DataCollectionService } from './data-collection.service';
 
 @Injectable()
 export class UsersCollectionService extends DataCollectionService<UserDataModel> {

@@ -1,4 +1,4 @@
-import '@firebase/firestore';
+import 'firebase/firestore';
 import { firestore, initializeApp } from 'firebase';
 
 import { NgModule } from '@angular/core';

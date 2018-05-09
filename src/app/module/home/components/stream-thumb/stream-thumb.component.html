@@ -5,10 +5,10 @@
     </button>
 
     <mat-menu #menu="matMenu" class="mat-body-strong">
-      <a mat-menu-item fxLayout fxLayoutAlign="start center" routerLink="stream/{{device?.id}}">
+      <button mat-menu-item fxLayout fxLayoutAlign="start center" (click)="onStartStream()">
         <mat-icon color="accent">play_circle_outline</mat-icon>
         <span>Play stream</span>
-      </a>
+      </button>
       <button mat-menu-item fxLayout fxLayoutAlign="start center">
         <mat-icon>edit</mat-icon>
         <span>Edit</span>
@@ -19,6 +19,6 @@
       </button>
     </mat-menu>
 
-    <a mat-button routerLink="stream/{{device?.id}}" class="device-label mat-body-strong">{{device?.get('name')}}</a>
+    <button mat-button class="device-label mat-body-strong" (click)="onStartStream()">{{device?.get('name')}}</button>
   </div>
 </mat-card>
