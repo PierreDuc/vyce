@@ -1,6 +1,6 @@
-import { Observable } from 'rxjs/index';
+import { Observable } from 'rxjs';
 
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { Select, Store } from '@ngxs/store';
 
@@ -12,7 +12,8 @@ import { ShowLogin } from '../../../shared/actions/ui.action';
 @Component({
   selector: 'vc-app-header',
   templateUrl: './app-header.component.html',
-  styleUrls: ['./app-header.component.scss']
+  styleUrls: ['./app-header.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppHeaderComponent {
   @Select(UserState) readonly user$!: Observable<UserStateModel | null>;

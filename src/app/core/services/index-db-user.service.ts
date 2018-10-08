@@ -25,7 +25,7 @@ export class IndexDbUserService {
     return get<T>(uid + key, this.getStore(store));
   }
 
-  set(key: string, value: any, store: UserStore): Promise<void> {
+  set<T>(key: string, value: T, store: UserStore): Promise<void> {
     const uid = this.uid();
 
     if (uid == null) {

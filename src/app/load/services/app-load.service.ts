@@ -11,7 +11,7 @@ import { SetPhase } from '../../shared/actions/auth.action';
 export class AppLoadService {
   constructor(private readonly as: AuthStateService, private readonly actions$: Actions) {}
 
-  initAuth(): Promise<any> {
-    return Promise.all([this.as.initAuth(), this.actions$.pipe(ofAction(SetPhase), first()).toPromise()]);
+  async initAuth(): Promise<void> {
+    await Promise.all([this.as.initAuth(), this.actions$.pipe(ofAction(SetPhase), first()).toPromise()]);
   }
 }

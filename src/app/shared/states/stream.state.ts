@@ -1,6 +1,4 @@
-import { Observable } from 'rxjs/index';
-
-import { Action, Select, Selector, State, StateContext } from '@ngxs/store';
+import { Action, Selector, State, StateContext } from '@ngxs/store';
 
 import { StreamConnectionService } from '../../core/services/stream-connection.service';
 import { StreamStateService } from '../../core/services/state/stream-state.service';
@@ -13,7 +11,6 @@ import {
   RemoveStream
 } from '../actions/stream.action';
 
-import { DevicesState } from './devices.state';
 import { StreamConnectionType } from '../enums/stream-connection-type.enum';
 
 export interface StreamModel {
@@ -48,8 +45,6 @@ export interface RtcPeerConnectionData extends StreamConnectionData {
   }
 })
 export class StreamState<T extends StateContext<StreamStateModel>> {
-  @Select(DevicesState.localDevices) private readonly localDevices$!: Observable<string[]>;
-
   constructor(private readonly ss: StreamStateService, private readonly sc: StreamConnectionService) {}
 
   @Selector()

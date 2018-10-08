@@ -1,11 +1,18 @@
-import { StreamConnectorService } from './stream-connector.service';
-import { RtcPeerConnectionData, StreamConnectionData } from '../../../shared/states/stream.state';
-import { StreamConnectionType } from '../../../shared/enums/stream-connection-type.enum';
-import { StreamCollectionService } from '../collection/stream-collection.service';
-import { AddMediaStream, RemoveStream } from '../../../shared/actions/stream.action';
 import { Injectable } from '@angular/core';
+
 import { Store } from '@ngxs/store';
+
+import { StreamConnectorService } from './stream-connector.service';
 import { MediaDevicesService } from '../media-devices.service';
+import { StreamCollectionService } from '../collection/stream-collection.service';
+
+import { StreamConnectionType } from '../../../shared/enums/stream-connection-type.enum';
+import { RtcPeerConnectionData } from '../../../shared/states/stream.state';
+import { AddMediaStream, RemoveStream } from '../../../shared/actions/stream.action';
+
+abstract class RTCTrackEvent extends Event {
+  streams: MediaStream[] = [];
+}
 
 @Injectable()
 export class RtcPeerConnectorService extends StreamConnectorService<RtcPeerConnectionData> {
@@ -96,12 +103,10 @@ export class RtcPeerConnectorService extends StreamConnectorService<RtcPeerConne
   private async getAnswer(connection: RtcPeerConnectionData): Promise<RtcPeerConnectionData> {
     const pc = this.createCallerChannel(connection);
 
-    await pc.setRemoteDescription(
-      new RTCSessionDescription({
-        sdp: connection.offer as string,
-        type: 'offer'
-      })
-    );
+    await pc.setRemoteDescription({
+      sdp: connection.offer || undefined,
+      type: 'offer'
+    });
 
     delete connection.offer;
 
@@ -115,21 +120,19 @@ export class RtcPeerConnectorService extends StreamConnectorService<RtcPeerConne
 
     return (
       pc &&
-      pc.setRemoteDescription(
-        new RTCSessionDescription({
-          sdp: connection.answer as string,
-          type: 'answer'
-        })
-      )
+      pc.setRemoteDescription({
+        sdp: connection.answer || void 0,
+        type: 'answer'
+      })
     );
   }
 
   private createCallerChannel(connection: RtcPeerConnectionData): RTCPeerConnection {
     const pc = this.createChannel(connection);
 
-    pc.addEventListener('track', (e: any) => {
+    pc.addEventListener('track', ((e: RTCTrackEvent): void => {
       this.store.dispatch(new AddMediaStream(connection, e.streams[0]));
-    });
+    }) as EventListener);
 
     this.callerChannels[connection.negotiationId] = pc;
 

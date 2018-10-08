@@ -1,14 +1,17 @@
+import { Observable } from 'rxjs';
+
 import { Type } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
 
 import { Action, State, StateContext } from '@ngxs/store';
 
-import { HideAddDevice, HideLogin, ShowAddDevice, ShowLogin, ShowSnackbar } from '../actions/ui.action';
 import { UiStateService } from '../../core/services/state/ui-state.service';
+import { UiSnackbarConfig } from '../../core/interface/ui-snackbar-config.interface';
 import { LoginDialogComponent } from '../components/dialog/login-dialog/login-dialog.component';
 import { AddDeviceDialogComponent } from '../components/dialog/add-device-dialog/add-device-dialog.component';
-import { Observable } from 'rxjs/index';
-import { UiSnackbarConfig } from '../../core/interface/ui-snackbar-config.interface';
+import { HideAddDevice, HideLogin, ShowAddDevice, ShowLogin, ShowSnackbar } from '../actions/ui.action';
+
+type UiDialogs = LoginDialogComponent | AddDeviceDialogComponent;
 
 export interface UiStateModel {
   dialogs: {
@@ -27,10 +30,9 @@ export interface UiStateModel {
   }
 })
 export class UiState<T extends StateContext<UiStateModel>> {
-  readonly dialogs = new Map<keyof UiStateModel['dialogs'], { dialog: Type<any>; ref?: MatDialogRef<any> }>([
-    ['login', { dialog: LoginDialogComponent }],
-    ['addDevice', { dialog: AddDeviceDialogComponent }]
-  ]);
+  readonly dialogs = new Map<keyof UiStateModel['dialogs'], { dialog: Type<UiDialogs>; ref?: MatDialogRef<UiDialogs> }>(
+    [['login', { dialog: LoginDialogComponent }], ['addDevice', { dialog: AddDeviceDialogComponent }]]
+  );
 
   constructor(private readonly us: UiStateService) {}
 

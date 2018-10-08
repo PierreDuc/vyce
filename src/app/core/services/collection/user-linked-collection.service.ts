@@ -1,4 +1,4 @@
-import { Observable, Subject } from 'rxjs/index';
+import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { Store } from '@ngxs/store';

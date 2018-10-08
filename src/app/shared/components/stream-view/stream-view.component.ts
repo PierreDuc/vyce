@@ -1,18 +1,19 @@
-import {filter, map, takeUntil} from 'rxjs/operators';
-import { Observable } from 'rxjs/index';
+import { map, takeUntil } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 
-import {Store} from '@ngxs/store';
+import { Store } from '@ngxs/store';
 
 import { AppState } from '../../../core/interface/app-state.interface';
-import {DevicesState, LocalDeviceModel} from "../../states/devices.state";
-import {DocumentTypedSnapshot} from "../../../core/interface/document-data.interface";
+import { DevicesState, LocalDeviceModel } from '../../states/devices.state';
+import { DocumentTypedSnapshot } from '../../../core/interface/document-data.interface';
 
 @Component({
   templateUrl: './stream-view.component.html',
-  styleUrls: ['./stream-view.component.scss']
+  styleUrls: ['./stream-view.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class StreamViewComponent {
   readonly device$: Observable<DocumentTypedSnapshot<LocalDeviceModel> | null>;
@@ -31,9 +32,14 @@ export class StreamViewComponent {
       })
     );
 
-    this.device$ = this.store.select(DevicesState.devices).pipe(
-      map((devices: DocumentTypedSnapshot<LocalDeviceModel>[]) => devices.find(device => device.id === this.streamId) || null)
-    );
+    this.device$ = this.store
+      .select(DevicesState.devices)
+      .pipe(
+        map(
+          (devices: DocumentTypedSnapshot<LocalDeviceModel>[]) =>
+            devices.find(device => device.id === this.streamId) || null
+        )
+      );
   }
 
   onCloseClick(): void {

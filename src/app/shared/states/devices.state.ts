@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs/index';
+import { Observable } from 'rxjs';
 
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 

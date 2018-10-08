@@ -1,7 +1,7 @@
-import { Observable } from 'rxjs/index';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { DocumentSnapshot } from '@firebase/firestore-types';
 
 import { Select, Store } from '@ngxs/store';
@@ -26,7 +26,8 @@ interface MediaInputs {
 
 @Component({
   templateUrl: './add-device-dialog.component.html',
-  styleUrls: ['./add-device-dialog.component.scss']
+  styleUrls: ['./add-device-dialog.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddDeviceDialogComponent {
   readonly inputs$: Observable<MediaInputs>;

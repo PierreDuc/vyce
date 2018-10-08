@@ -1,12 +1,12 @@
-import { app, auth, firestore } from 'firebase';
+import firebase from 'firebase/app';
 
-export abstract class FirebaseService implements Partial<app.App> {
+export abstract class FirebaseService implements Partial<firebase.app.App> {
   abstract name: string;
   abstract options: {};
-  abstract auth: () => auth.Auth;
-  abstract firestore: () => firestore.Firestore;
+  abstract auth: () => firebase.auth.Auth;
+  abstract firestore: () => firebase.firestore.Firestore;
 
   static timestamp(): number {
-    return firestore.Timestamp.now().toMillis();
+    return firebase.firestore.Timestamp.now().toMillis();
   }
 }

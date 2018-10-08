@@ -5,7 +5,7 @@ import { Select } from '@ngxs/store';
 import { StreamConnectionData } from '../../shared/states/stream.state';
 import { StreamConnectorService } from './connectors/stream-connector.service';
 import { filter, mergeMap, takeUntil } from 'rxjs/operators';
-import { merge, Observable, Subject } from 'rxjs/index';
+import { merge, Observable, Subject } from 'rxjs';
 import { DocumentTypedSnapshot } from '../interface/document-data.interface';
 import { DevicesState } from '../../shared/states/devices.state';
 import { StreamCollectionService } from './collection/stream-collection.service';

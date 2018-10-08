@@ -1,5 +1,3 @@
-import { environment } from '../../environments/environment';
-
 import { NgModule } from '@angular/core';
 import { MatDialogModule, MatSnackBarModule } from '@angular/material';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -32,7 +30,7 @@ import { AuthGuard } from './guards/auth.guard';
 
 @NgModule({
   imports: [
-    FirebaseModule.initialize(environment.firebase),
+    FirebaseModule,
     NgxsModule.forRoot([UiState, AuthState, UserState, DevicesState, StreamState]),
     MatSnackBarModule,
     MatDialogModule,

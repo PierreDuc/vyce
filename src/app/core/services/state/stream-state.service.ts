@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material';
 
-import { Store } from '@ngxs/store';
-
 import { StreamViewComponent } from '../../../shared/components/stream-view/stream-view.component';
 import { StreamConnectionData } from '../../../shared/states/stream.state';
 import { StreamConnectionService } from '../stream-connection.service';
@@ -18,7 +16,7 @@ export class StreamStateService {
     panelClass: 'stream-view-pane'
   };
 
-  constructor(private readonly md: MatDialog, private sc: StreamConnectionService, private readonly store: Store) {}
+  constructor(private readonly md: MatDialog, private sc: StreamConnectionService) {}
 
   public openStreamWindow(connection: StreamConnectionData): void {
     this.streamDialogs[connection.streamId] = this.md.open(StreamViewComponent, {

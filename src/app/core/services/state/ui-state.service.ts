@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs/index';
+import { Observable } from 'rxjs';
 
 import { Injectable, Type } from '@angular/core';
 import { MatDialog, MatDialogRef, MatSnackBar, MatSnackBarConfig } from '@angular/material';
@@ -13,8 +13,8 @@ export class UiStateService {
 
   constructor(private readonly md: MatDialog, private readonly sb: MatSnackBar) {}
 
-  public showDialog<T>(dialog: Type<T>, data?: any): MatDialogRef<T> {
-    return this.md.open(dialog, { data });
+  public showDialog<T, R = null>(dialog: Type<T>, data?: R): MatDialogRef<T, R> {
+    return this.md.open<T, R>(dialog, { data });
   }
 
   public showSnackbar({ message, action, config }: UiSnackbarConfig): Observable<void> {

@@ -1,6 +1,6 @@
-import { Observable } from 'rxjs/index';
+import { Observable } from 'rxjs';
 
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 import { Select, Store } from '@ngxs/store';
 
@@ -11,7 +11,8 @@ import { UserState, UserStateModel } from '../../../../../shared/states/user.sta
 @Component({
   selector: 'vc-home-welcome',
   templateUrl: './home-welcome.component.html',
-  styleUrls: ['./home-welcome.component.scss']
+  styleUrls: ['./home-welcome.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeWelcomeComponent {
   @Select(UserState) readonly user$!: Observable<UserStateModel | null>;

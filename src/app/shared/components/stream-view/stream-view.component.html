@@ -3,7 +3,7 @@
     <mat-icon>menu</mat-icon>
   </button>
 
-  <span fxFlex="auto" class="stream-view-title" vcDialogMover>{{device.get('name')}}</span>
+  <span fxFlex="auto" class="stream-view-title" vcDialogMover [offsetX]="40">{{device.get('name')}}</span>
 
   <button mat-icon-button (click)="onCloseClick()">
     <mat-icon>close</mat-icon>

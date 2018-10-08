@@ -1,4 +1,5 @@
-import { auth } from 'firebase';
+import firebase from 'firebase/app';
+import { AuthProvider } from '@firebase/auth-types';
 
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 
@@ -10,7 +11,7 @@ import { FirebaseService } from '../../core/module/firebase/firebase.service';
 export interface AuthStateModel {
   phase: AuthPhase;
   provider?: LoginProvider;
-  persistence?: auth.Auth.Persistence;
+  persistence?: firebase.auth.Auth.Persistence;
 }
 
 @State<AuthStateModel>({
@@ -20,9 +21,9 @@ export interface AuthStateModel {
   }
 })
 export class AuthState<T extends StateContext<AuthStateModel>> {
-  private authProviders: { [k in LoginProvider]: { new (): auth.AuthProvider } } = {
-    [LoginProvider.Google]: auth.GoogleAuthProvider,
-    [LoginProvider.Facebook]: auth.FacebookAuthProvider
+  private authProviders: { [k in LoginProvider]: { new (): AuthProvider } } = {
+    [LoginProvider.Google]: firebase.auth.GoogleAuthProvider,
+    [LoginProvider.Facebook]: firebase.auth.FacebookAuthProvider
   };
 
   constructor(readonly fs: FirebaseService) {}
@@ -46,8 +47,10 @@ export class AuthState<T extends StateContext<AuthStateModel>> {
 
     return this.fs
       .auth()
-      .signInWithPopup(new this.authProviders[provider]())
-      .catch(() => dispatch(new SetPhase(AuthPhase.LoggedOut)));
+      .signInWithRedirect(new this.authProviders[provider]())
+      .catch(() => {
+        dispatch(new SetPhase(AuthPhase.LoggedOut))
+      });
   }
 
   @Action(SetPhase)

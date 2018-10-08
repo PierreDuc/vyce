@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs/index';
+import { Observable } from 'rxjs';
 
 import { DocumentReference, CollectionReference } from '@firebase/firestore-types';
 
