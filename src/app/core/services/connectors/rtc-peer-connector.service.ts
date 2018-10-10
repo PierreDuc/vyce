@@ -32,19 +32,24 @@ export class RtcPeerConnectorService extends StreamConnectorService<RtcPeerConne
     };
   }
 
-  shouldHandleMessage({ callerId, needOffer, offer, answer }: RtcPeerConnectionData, fromCaller: boolean): boolean {
-    if (needOffer || answer) {
-      return (callerId !== this.callerId) === fromCaller;
+  shouldHandleMessage({ callerId, needOffer, offer, answer, disconnect }: RtcPeerConnectionData, fromCaller: boolean): boolean {
+    if (needOffer || answer || disconnect) {
+      return callerId !== this.callerId && !fromCaller;
     }
 
     if (offer) {
-      return (callerId === this.callerId) === fromCaller;
+      return callerId === this.callerId && fromCaller;
     }
 
     return false;
   }
 
   async processMessage(connection: RtcPeerConnectionData): Promise<RtcPeerConnectionData | void> {
+    if (connection.disconnect) {
+      this.ss.delete(connection.streamId);
+      return this.disconnect(connection);
+    }
+
     if (connection.needOffer) {
       return { ...(await this.getOffer(connection)) };
     }
@@ -67,13 +72,7 @@ export class RtcPeerConnectorService extends StreamConnectorService<RtcPeerConne
     delete this.callerChannels[connection.negotiationId];
     delete this.senderChannels[connection.negotiationId];
 
-    pcs.forEach(pc => {
-      [...pc.getLocalStreams(), ...pc.getRemoteStreams()].forEach(stream =>
-        stream.getTracks().forEach(track => track.stop())
-      );
-
-      pc.close();
-    });
+    pcs.forEach(pc => pc.close());
 
     this.removeConnection(connection);
     this.store.dispatch(new RemoveStream(connection));
@@ -151,6 +150,17 @@ export class RtcPeerConnectorService extends StreamConnectorService<RtcPeerConne
     const pc = new RTCPeerConnection({});
 
     pc.addEventListener('iceconnectionstatechange', () => {
+      if (pc.signalingState === 'closed') {
+        this.disconnect(connection);
+      }
+    });
+    pc.addEventListener('signalingstatechange', () => {
+      if (pc.signalingState === 'closed') {
+        this.disconnect(connection);
+      }
+    });
+
+    pc.addEventListener('close', () => {
       if (pc.signalingState === 'closed') {
         this.disconnect(connection);
       }

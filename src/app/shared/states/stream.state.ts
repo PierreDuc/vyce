@@ -29,6 +29,7 @@ export interface StreamConnectionData {
   streamId: string;
   negotiationId: string;
   timestamp: number;
+  disconnect?: boolean;
 }
 
 export interface RtcPeerConnectionData extends StreamConnectionData {

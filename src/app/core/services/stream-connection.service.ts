@@ -1,15 +1,16 @@
+import { filter, mergeMap, skip, takeUntil } from 'rxjs/operators';
+import { merge, Observable, Subject } from 'rxjs';
+
 import { Inject, Injectable } from '@angular/core';
 
 import { Select } from '@ngxs/store';
 
+import { FirebaseService } from '../module/firebase/firebase.service';
+import { DevicesState } from '../../shared/states/devices.state';
 import { StreamConnectionData } from '../../shared/states/stream.state';
 import { StreamConnectorService } from './connectors/stream-connector.service';
-import { filter, mergeMap, takeUntil } from 'rxjs/operators';
-import { merge, Observable, Subject } from 'rxjs';
-import { DocumentTypedSnapshot } from '../interface/document-data.interface';
-import { DevicesState } from '../../shared/states/devices.state';
 import { StreamCollectionService } from './collection/stream-collection.service';
-import { FirebaseService } from '../module/firebase/firebase.service';
+import { DocumentTypedSnapshot } from '../interface/document-data.interface';
 
 @Injectable()
 export class StreamConnectionService {
@@ -36,7 +37,8 @@ export class StreamConnectionService {
               takeUntil(
                 this.disconnectStream$.pipe(filter(({ negotiationId }) => negotiationId === connection.negotiationId))
               ),
-              filter(streamDataDoc => streamDataDoc.exists)
+              filter(streamDataDoc => streamDataDoc.exists),
+              skip(1)
             )
             .subscribe(streamDataDoc => this.processMessage(streamDataDoc, true));
 
@@ -70,6 +72,10 @@ export class StreamConnectionService {
     if (connector) {
       connector.disconnect(connection);
       this.disconnectStream$.next(connection);
+
+      connection.disconnect = true;
+
+      this.ss.set(connection, connection.streamId);
     }
   }
 

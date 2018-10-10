@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import {Injectable, NgZone} from '@angular/core';
 import { MatDialog, MatDialogConfig, MatDialogRef } from '@angular/material';
 
 import { StreamViewComponent } from '../../../shared/components/stream-view/stream-view.component';
@@ -16,14 +16,16 @@ export class StreamStateService {
     panelClass: 'stream-view-pane'
   };
 
-  constructor(private readonly md: MatDialog, private sc: StreamConnectionService) {}
+  constructor(private readonly md: MatDialog, private sc: StreamConnectionService, private zone: NgZone) {}
 
   public openStreamWindow(connection: StreamConnectionData): void {
-    this.streamDialogs[connection.streamId] = this.md.open(StreamViewComponent, {
-      data: connection.streamId,
-      ...this.dialogSettings
+    this.zone.run(() => {
+      this.streamDialogs[connection.streamId] = this.md.open(StreamViewComponent, {
+        data: connection.streamId,
+        ...this.dialogSettings
+      });
+      this.streamDialogs[connection.streamId].afterClosed().subscribe(() => this.sc.stopStream(connection));
     });
-    this.streamDialogs[connection.streamId].afterClosed().subscribe(() => this.sc.stopStream(connection));
   }
 
   public closeStreamWindow({ streamId }: StreamConnectionData): void {
