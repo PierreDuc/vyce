@@ -7,7 +7,7 @@ import { NgModule, NgZone } from '@angular/core';
 import { FirebaseService } from './firebase.service';
 import { environment } from '../../../../environments/environment';
 
-export function _firebaseAppFactory(ngZone: NgZone): FirebaseService {
+export function firebaseAppFactory(ngZone: NgZone): FirebaseService {
   const fs: FirebaseService = ngZone.runOutsideAngular(() => firebase.initializeApp(environment.firebase));
 
   firebase.firestore().settings({
@@ -21,7 +21,7 @@ export function _firebaseAppFactory(ngZone: NgZone): FirebaseService {
   providers: [
     {
       provide: FirebaseService,
-      useFactory: _firebaseAppFactory,
+      useFactory: firebaseAppFactory,
       deps: [NgZone]
     }
   ]

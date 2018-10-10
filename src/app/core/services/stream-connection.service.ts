@@ -3,7 +3,7 @@ import { merge, Observable, Subject } from 'rxjs';
 
 import { Inject, Injectable } from '@angular/core';
 
-import { Select } from '@ngxs/store';
+import {Select, Store} from '@ngxs/store';
 
 import { FirebaseService } from '../module/firebase/firebase.service';
 import { DevicesState } from '../../shared/states/devices.state';
@@ -11,6 +11,7 @@ import { StreamConnectionData } from '../../shared/states/stream.state';
 import { StreamConnectorService } from './connectors/stream-connector.service';
 import { StreamCollectionService } from './collection/stream-collection.service';
 import { DocumentTypedSnapshot } from '../interface/document-data.interface';
+import {ShowSnackbar} from "../../shared/actions/ui.action";
 
 @Injectable()
 export class StreamConnectionService {
@@ -20,11 +21,11 @@ export class StreamConnectionService {
   private readonly disconnectStream$ = new Subject<StreamConnectionData>();
 
   constructor(
-    @Inject(StreamConnectorService) private readonly connectors: StreamConnectorService<StreamConnectionData>[],
-    private readonly ss: StreamCollectionService
+    @Inject(StreamConnectorService) readonly connectors: StreamConnectorService<StreamConnectionData>[],
+    readonly ss: StreamCollectionService, readonly store: Store
   ) {}
 
-  public async connectToStream(streamId: string): Promise<StreamConnectionData> {
+  public async connectToStream(streamId: string): Promise<StreamConnectionData | void> {
     for (const connector of this.connectors) {
       try {
         if (await connector.isAvailable()) {
@@ -49,7 +50,7 @@ export class StreamConnectionService {
       } catch {}
     }
 
-    throw new Error();
+    this.store.dispatch(new ShowSnackbar('No connections available'));
   }
 
   public startListening(): void {

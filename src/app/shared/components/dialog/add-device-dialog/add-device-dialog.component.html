@@ -4,7 +4,7 @@
 
     <div fxLayout="column" fxLayoutGap="32px" matDialogContent>
       <div *ngIf="state === states.NotLinked" class="mat-subheading-1">I've detected the input devices on your system. Please select your desired device(s). You can also disable either the audio or video stream.<br>
-        I've have already selected the default devices from your system.
+        I've have already selected the default, or only devices from your system.
       </div>
 
       <div *ngIf="state === states.LocalNotSaved" class="mat-subheading-1">I've detected a stored device on this system, but I cannot link it with any known device on your account. Please choose the correct input devices to link this device to your account, or delete the locally stored device.

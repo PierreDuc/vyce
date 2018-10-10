@@ -37,7 +37,9 @@ import { AuthGuard } from './guards/auth.guard';
     SharedModule,
     BrowserAnimationsModule
   ],
-  exports: [NgxsModule],
+  exports: [
+    NgxsModule
+  ],
   providers: [
     UiStateService,
     AuthStateService,

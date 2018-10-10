@@ -1,24 +1,17 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {NgxsModule} from "@ngxs/store";
 
 import { StreamListComponent } from './stream-list.component';
+import {initComponent} from "../../../../../testing/init-component.function";
+import {MediaDevicesService} from "../../../../core/services/media-devices.service";
+import {MockMediaDevicesService} from "../../../../core/services/media-devices.service.mock";
 
 describe('StreamListComponent', () => {
-  let component: StreamListComponent;
-  let fixture: ComponentFixture<StreamListComponent>;
-
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [StreamListComponent]
-    }).compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(StreamListComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  initComponent(StreamListComponent, {
+    imports: [
+      NgxsModule.forRoot([]),
+    ],
+    providers: [
+      { provide: MediaDevicesService, useClass: MockMediaDevicesService }
+    ]
   });
 });

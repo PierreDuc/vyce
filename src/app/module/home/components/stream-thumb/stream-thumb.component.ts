@@ -16,7 +16,7 @@ import { StreamConnectionService } from '../../../../core/services/stream-connec
 export class StreamThumbComponent {
   @Input() device?: DocumentTypedSnapshot<LocalDeviceModel>;
 
-  constructor(private readonly store: Store, private readonly sc: StreamConnectionService) {}
+  constructor(readonly store: Store, readonly sc: StreamConnectionService) {}
 
   public onDeleteDevice(): void {
     if (this.device) {

@@ -2,6 +2,8 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
+import { MAT_DIALOG_DATA } from '@angular/material';
+
 import { DocumentSnapshot } from '@firebase/firestore-types';
 
 import { Select, Store } from '@ngxs/store';
@@ -9,9 +11,8 @@ import { Select, Store } from '@ngxs/store';
 import { AddLocalDevice, CheckLocalDevice, RemoveLocalDevice } from '../../../actions/devices.action';
 import { MediaDevicesService } from '../../../../core/services/media-devices.service';
 import { DevicesState, LocalDeviceModel } from '../../../states/devices.state';
-import { DeviceType } from '../../../enums/device-type.enum';
+import {DeviceType, DeviceTypes} from '../../../enums/device-type.enum';
 import { LocalDeviceState } from '../../../enums/local-device-state.enum';
-import { MAT_DIALOG_DATA } from '@angular/material';
 
 interface MediaInputType {
   disabled?: boolean;
@@ -101,9 +102,13 @@ export class AddDeviceDialogComponent {
   private filterDevices(devices: MediaDeviceInfo[]): MediaInputType {
     const standard: MediaDeviceInfo | undefined = devices.find(device => device.deviceId === DeviceType.Default);
     const inputType: MediaInputType = {
-      selected: (standard && devices.find(i => i.groupId === standard.groupId && i !== standard)) || devices[0],
-      devices: devices.filter(input => !DeviceType.includes(input.deviceId))
+      selected: (standard && devices.find(i => i.groupId === standard.groupId && !DeviceTypes.includes(i.deviceId))),
+      devices: devices.filter(device => !DeviceTypes.includes(device.deviceId))
     };
+
+    if (!inputType.selected) {
+      inputType.selected = inputType.devices[0];
+    }
 
     inputType.disabled = inputType.devices.length === 0;
 

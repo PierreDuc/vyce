@@ -5,5 +5,5 @@
     "module": "es6",
     "types": []
   },
-  "exclude": ["test.ts", "**/*.spec.ts"]
+  "exclude": ["test.ts", "**/*.spec.ts", "testing/**/*.ts"]
 }

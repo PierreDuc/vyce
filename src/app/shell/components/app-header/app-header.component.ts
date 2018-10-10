@@ -19,7 +19,7 @@ export class AppHeaderComponent {
   @Select(UserState) readonly user$!: Observable<UserStateModel | null>;
   @Select(AuthState.loggedIn) readonly loggedIn$!: Observable<boolean>;
 
-  constructor(private readonly as: AuthStateService, private readonly store: Store) {}
+  constructor(readonly as: AuthStateService, readonly store: Store) {}
 
   onAvatarClick(): void {
     if (this.store.selectSnapshot(AuthState.loggedIn)) {

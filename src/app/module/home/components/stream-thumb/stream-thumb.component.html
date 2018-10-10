@@ -19,6 +19,8 @@
       </button>
     </mat-menu>
 
-    <button mat-button class="device-label mat-body-strong" (click)="onStartStream()">{{device?.get('name')}}</button>
+    <button mat-button class="device-label mat-body-strong" [title]="device?.get('name')" (click)="onStartStream()">
+      {{device?.get('name')}}
+    </button>
   </div>
 </mat-card>

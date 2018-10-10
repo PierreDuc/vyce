@@ -1,24 +1,17 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {NgxsModule} from "@ngxs/store";
 
 import { AppHeaderComponent } from './app-header.component';
 
+import {initComponent} from "../../../../testing/init-component.function";
+import {AuthStateService} from "../../../core/services/state/auth-state.service";
+import {MockAuthStateService} from "../../../core/services/state/auth-state.service.mock";
+
+
 describe('AppHeaderComponent', () => {
-  let component: AppHeaderComponent;
-  let fixture: ComponentFixture<AppHeaderComponent>;
-
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [AppHeaderComponent]
-    }).compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(AppHeaderComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  initComponent(AppHeaderComponent, {
+    imports: [ NgxsModule.forRoot([]) ],
+    providers: [
+      { provide: AuthStateService, useClass: MockAuthStateService }
+    ]
   });
 });

@@ -1,24 +1,12 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import {NgxsModule} from "@ngxs/store";
 
 import { HomeWelcomeComponent } from './home-welcome.component';
+import { initComponent } from "../../../../../../testing/init-component.function";
 
 describe('HomeWelcomeComponent', () => {
-  let component: HomeWelcomeComponent;
-  let fixture: ComponentFixture<HomeWelcomeComponent>;
-
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [HomeWelcomeComponent]
-    }).compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(HomeWelcomeComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  initComponent(HomeWelcomeComponent, {
+    imports: [
+      NgxsModule.forRoot([]),
+    ]
   });
 });

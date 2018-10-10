@@ -1,24 +1,12 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { LoginDialogComponent } from './login-dialog.component';
+import { initComponent } from "../../../../../testing/init-component.function";
+import { AuthStateService } from "../../../../core/services/state/auth-state.service";
+import { MockAuthStateService } from "../../../../core/services/state/auth-state.service.mock";
 
 describe('LoginDialogComponent', () => {
-  let component: LoginDialogComponent;
-  let fixture: ComponentFixture<LoginDialogComponent>;
-
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [LoginDialogComponent]
-    }).compileComponents();
-  }));
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(LoginDialogComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  initComponent(LoginDialogComponent, {
+    providers: [
+      { provide: AuthStateService, useClass: MockAuthStateService }
+    ]
   });
 });

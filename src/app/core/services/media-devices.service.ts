@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngxs/store';
 
 import { InputKind } from '../../shared/enums/input-kind.enum';
-import { ShowAddDevice } from '../../shared/actions/ui.action';
+import {ShowAddDevice, ShowSnackbar} from '../../shared/actions/ui.action';
 import { LocalDeviceModel } from '../../shared/states/devices.state';
 import { IndexDbUserService } from './index-db-user.service';
 import { UserStore } from '../../shared/enums/user-store.enum';
@@ -18,7 +18,7 @@ export class MediaDevicesService {
     audio: []
   });
 
-  constructor(private readonly store: Store, private readonly idu: IndexDbUserService) {
+  constructor(readonly store: Store, readonly idu: IndexDbUserService) {
     navigator.mediaDevices.addEventListener('devicechange', () => this.updateDeviceList());
 
     this.updateDeviceList();
@@ -36,6 +36,12 @@ export class MediaDevicesService {
         stream.getTracks().forEach(track => track.stop());
 
         this.updateDeviceList().then(() => this.store.dispatch(new ShowAddDevice()));
+      }).catch((e) => {
+        this.store.dispatch(new ShowSnackbar({
+          message: 'To use this function you have to accept the access to camera and/or microphone',
+          config: { politeness: 'assertive' },
+          action: 'Try again'
+        })).subscribe(() => this.addLocalAvailable())
       });
   }
 

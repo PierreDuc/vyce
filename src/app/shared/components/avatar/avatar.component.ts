@@ -8,5 +8,5 @@ import { UserStateModel } from '../../states/user.state';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AvatarComponent {
-  @Input() user!: UserStateModel;
+  @Input() user?: UserStateModel;
 }
